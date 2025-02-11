@@ -16,11 +16,36 @@ enum LongitudinalPersonalitySP {
   moderate @1;
   standard @2;
   relaxed @3;
+  overtake @4;
+}
+
+enum AccelerationPersonality {
+  sport @0;
+  normal @1;
+  eco @2;
+  stock @3;
+}
+
+enum ModelGeneration {
+  default @0;
+  one @1;
+  two @2;
+  three @3;
+  four @4;
+  five @5;
+}
+
+enum MpcSource {
+  acc @0;
+  blended @1;
 }
 
 struct ControlsStateSP @0x81c2f05a394cf4af {
   lateralState @0 :Text;
   personality @8 :LongitudinalPersonalitySP;
+  dynamicPersonality @9 :Bool;
+  accelPersonality @10 :AccelerationPersonality;
+  overtakingAccelerationAssist @11 :Bool;
 
   lateralControlState :union {
     indiState @1 :LateralINDIState;
@@ -72,8 +97,10 @@ struct LongitudinalPlanSP @0xaedffd8f31e7b55d {
   desiredTF @13 :Float32;
   notSpeedLimit @14 :Int16;
   e2eX @15 :List(Float32);
-  e2eBlended @18 :Text;
+  e2eBlendedDEPRECATED @18 :Text;
   e2eStatus @22 :Bool;
+  mpcSource @23 :MpcSource;
+  dynamicExperimentalControl @24 :Bool;
 
   distToTurn @7 :Float32;
   turnSpeed @8 :Float32;
@@ -180,6 +207,9 @@ struct E2eLongStateSP @0xa5cd762cd951a455 {
 struct ModelDataV2SP @0xf98d843bfd7004a3 {
   laneChangePrev @0 :Bool;
   laneChangeEdgeBlock @1 :Bool;
+  customModel @2 :Bool;
+  modelGeneration @3 :ModelGeneration;
+  modelCapabilities @4 :UInt32;
 }
 
 struct CustomReserved7 @0xb86e6369214c01c8 {

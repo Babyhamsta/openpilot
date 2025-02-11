@@ -142,6 +142,7 @@ enum class EventName_baa8c5d505f727de: uint16_t {
   LOCATIOND_PERMANENT_ERROR,
   PARAMSD_PERMANENT_ERROR,
   ACTUATORS_API_UNAVAILABLE,
+  ESP_ACTIVE,
   MANUAL_STEERING_REQUIRED,
   MANUAL_LONGITUDINAL_REQUIRED,
   SILENT_PEDAL_PRESSED,
@@ -162,6 +163,7 @@ enum class EventName_baa8c5d505f727de: uint16_t {
   SPEED_LIMIT_PRE_ACTIVE,
   SPEED_LIMIT_CONFIRMED,
   TORQUE_N_N_LOAD,
+  HYUNDAI_RADAR_TRACKS_AVAILABLE,
 };
 CAPNP_DECLARE_ENUM(EventName, baa8c5d505f727de);
 CAPNP_DECLARE_SCHEMA(9da4fa09e052903c);
@@ -1006,6 +1008,8 @@ public:
 
   inline float getCumLagMs() const;
 
+  inline bool getEspActive() const;
+
   inline bool getMadsEnabled() const;
 
   inline bool getLeftBlinkerOn() const;
@@ -1234,6 +1238,9 @@ public:
   inline float getCumLagMs();
   inline void setCumLagMs(float value);
 
+  inline bool getEspActive();
+  inline void setEspActive(bool value);
+
   inline bool getMadsEnabled();
   inline void setMadsEnabled(bool value);
 
@@ -1318,7 +1325,7 @@ public:
 
   inline float getFinalSpeedKph() const;
 
-  inline float getVCruiseKphPrev() const;
+  inline float getVCruiseKphPrevDEPRECATED() const;
 
   inline float getTargetSpeed() const;
 
@@ -1362,8 +1369,8 @@ public:
   inline float getFinalSpeedKph();
   inline void setFinalSpeedKph(float value);
 
-  inline float getVCruiseKphPrev();
-  inline void setVCruiseKphPrev(float value);
+  inline float getVCruiseKphPrevDEPRECATED();
+  inline void setVCruiseKphPrevDEPRECATED(float value);
 
   inline float getTargetSpeed();
   inline void setTargetSpeed(float value);
@@ -2653,13 +2660,13 @@ public:
 
   inline bool getHasStockCameraDEPRECATED() const;
 
-  inline float getLongitudinalActuatorDelayUpperBound() const;
+  inline float getLongitudinalActuatorDelay() const;
 
   inline float getVEgoStarting() const;
 
   inline float getStopAccel() const;
 
-  inline float getLongitudinalActuatorDelayLowerBound() const;
+  inline float getLongitudinalActuatorDelayLowerBoundDEPRECATEDDEPRECATED() const;
 
   inline bool hasSafetyConfigs() const;
   inline  ::capnp::List< ::cereal::CarParams::SafetyConfig,  ::capnp::Kind::STRUCT>::Reader getSafetyConfigs() const;
@@ -2940,8 +2947,8 @@ public:
   inline bool getHasStockCameraDEPRECATED();
   inline void setHasStockCameraDEPRECATED(bool value);
 
-  inline float getLongitudinalActuatorDelayUpperBound();
-  inline void setLongitudinalActuatorDelayUpperBound(float value);
+  inline float getLongitudinalActuatorDelay();
+  inline void setLongitudinalActuatorDelay(float value);
 
   inline float getVEgoStarting();
   inline void setVEgoStarting(float value);
@@ -2949,8 +2956,8 @@ public:
   inline float getStopAccel();
   inline void setStopAccel(float value);
 
-  inline float getLongitudinalActuatorDelayLowerBound();
-  inline void setLongitudinalActuatorDelayLowerBound(float value);
+  inline float getLongitudinalActuatorDelayLowerBoundDEPRECATEDDEPRECATED();
+  inline void setLongitudinalActuatorDelayLowerBoundDEPRECATEDDEPRECATED(float value);
 
   inline bool hasSafetyConfigs();
   inline  ::capnp::List< ::cereal::CarParams::SafetyConfig,  ::capnp::Kind::STRUCT>::Builder getSafetyConfigs();
@@ -3486,11 +3493,11 @@ public:
   inline bool hasKiV() const;
   inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader getKiV() const;
 
-  inline bool hasDeadzoneBP() const;
-  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader getDeadzoneBP() const;
+  inline bool hasDeadzoneBPDEPRECATED() const;
+  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader getDeadzoneBPDEPRECATED() const;
 
-  inline bool hasDeadzoneV() const;
-  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader getDeadzoneV() const;
+  inline bool hasDeadzoneVDEPRECATED() const;
+  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader getDeadzoneVDEPRECATED() const;
 
   inline float getKf() const;
 
@@ -3554,21 +3561,21 @@ public:
   inline void adoptKiV(::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>&& value);
   inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> disownKiV();
 
-  inline bool hasDeadzoneBP();
-  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder getDeadzoneBP();
-  inline void setDeadzoneBP( ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader value);
-  inline void setDeadzoneBP(::kj::ArrayPtr<const float> value);
-  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder initDeadzoneBP(unsigned int size);
-  inline void adoptDeadzoneBP(::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>&& value);
-  inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> disownDeadzoneBP();
+  inline bool hasDeadzoneBPDEPRECATED();
+  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder getDeadzoneBPDEPRECATED();
+  inline void setDeadzoneBPDEPRECATED( ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader value);
+  inline void setDeadzoneBPDEPRECATED(::kj::ArrayPtr<const float> value);
+  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder initDeadzoneBPDEPRECATED(unsigned int size);
+  inline void adoptDeadzoneBPDEPRECATED(::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>&& value);
+  inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> disownDeadzoneBPDEPRECATED();
 
-  inline bool hasDeadzoneV();
-  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder getDeadzoneV();
-  inline void setDeadzoneV( ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader value);
-  inline void setDeadzoneV(::kj::ArrayPtr<const float> value);
-  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder initDeadzoneV(unsigned int size);
-  inline void adoptDeadzoneV(::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>&& value);
-  inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> disownDeadzoneV();
+  inline bool hasDeadzoneVDEPRECATED();
+  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder getDeadzoneVDEPRECATED();
+  inline void setDeadzoneVDEPRECATED( ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader value);
+  inline void setDeadzoneVDEPRECATED(::kj::ArrayPtr<const float> value);
+  inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder initDeadzoneVDEPRECATED(unsigned int size);
+  inline void adoptDeadzoneVDEPRECATED(::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>&& value);
+  inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> disownDeadzoneVDEPRECATED();
 
   inline float getKf();
   inline void setKf(float value);
@@ -5185,102 +5192,116 @@ inline void CarState::Builder::setCumLagMs(float value) {
       ::capnp::bounded<17>() * ::capnp::ELEMENTS, value);
 }
 
-inline bool CarState::Reader::getMadsEnabled() const {
+inline bool CarState::Reader::getEspActive() const {
   return _reader.getDataField<bool>(
       ::capnp::bounded<364>() * ::capnp::ELEMENTS);
 }
 
-inline bool CarState::Builder::getMadsEnabled() {
+inline bool CarState::Builder::getEspActive() {
   return _builder.getDataField<bool>(
       ::capnp::bounded<364>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setMadsEnabled(bool value) {
+inline void CarState::Builder::setEspActive(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<364>() * ::capnp::ELEMENTS, value);
 }
 
-inline bool CarState::Reader::getLeftBlinkerOn() const {
+inline bool CarState::Reader::getMadsEnabled() const {
   return _reader.getDataField<bool>(
       ::capnp::bounded<365>() * ::capnp::ELEMENTS);
 }
 
-inline bool CarState::Builder::getLeftBlinkerOn() {
+inline bool CarState::Builder::getMadsEnabled() {
   return _builder.getDataField<bool>(
       ::capnp::bounded<365>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setLeftBlinkerOn(bool value) {
+inline void CarState::Builder::setMadsEnabled(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<365>() * ::capnp::ELEMENTS, value);
 }
 
-inline bool CarState::Reader::getRightBlinkerOn() const {
+inline bool CarState::Reader::getLeftBlinkerOn() const {
   return _reader.getDataField<bool>(
       ::capnp::bounded<366>() * ::capnp::ELEMENTS);
 }
 
-inline bool CarState::Builder::getRightBlinkerOn() {
+inline bool CarState::Builder::getLeftBlinkerOn() {
   return _builder.getDataField<bool>(
       ::capnp::bounded<366>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setRightBlinkerOn(bool value) {
+inline void CarState::Builder::setLeftBlinkerOn(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<366>() * ::capnp::ELEMENTS, value);
 }
 
-inline bool CarState::Reader::getDisengageByBrake() const {
+inline bool CarState::Reader::getRightBlinkerOn() const {
   return _reader.getDataField<bool>(
       ::capnp::bounded<367>() * ::capnp::ELEMENTS);
 }
 
-inline bool CarState::Builder::getDisengageByBrake() {
+inline bool CarState::Builder::getRightBlinkerOn() {
   return _builder.getDataField<bool>(
       ::capnp::bounded<367>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setDisengageByBrake(bool value) {
+inline void CarState::Builder::setRightBlinkerOn(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<367>() * ::capnp::ELEMENTS, value);
 }
 
-inline bool CarState::Reader::getBelowLaneChangeSpeed() const {
+inline bool CarState::Reader::getDisengageByBrake() const {
   return _reader.getDataField<bool>(
       ::capnp::bounded<368>() * ::capnp::ELEMENTS);
 }
 
-inline bool CarState::Builder::getBelowLaneChangeSpeed() {
+inline bool CarState::Builder::getDisengageByBrake() {
   return _builder.getDataField<bool>(
       ::capnp::bounded<368>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setBelowLaneChangeSpeed(bool value) {
+inline void CarState::Builder::setDisengageByBrake(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<368>() * ::capnp::ELEMENTS, value);
 }
 
-inline bool CarState::Reader::getAccEnabled() const {
+inline bool CarState::Reader::getBelowLaneChangeSpeed() const {
   return _reader.getDataField<bool>(
       ::capnp::bounded<369>() * ::capnp::ELEMENTS);
 }
 
-inline bool CarState::Builder::getAccEnabled() {
+inline bool CarState::Builder::getBelowLaneChangeSpeed() {
   return _builder.getDataField<bool>(
       ::capnp::bounded<369>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setAccEnabled(bool value) {
+inline void CarState::Builder::setBelowLaneChangeSpeed(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<369>() * ::capnp::ELEMENTS, value);
 }
 
-inline bool CarState::Reader::getLatActive() const {
+inline bool CarState::Reader::getAccEnabled() const {
   return _reader.getDataField<bool>(
       ::capnp::bounded<370>() * ::capnp::ELEMENTS);
 }
 
-inline bool CarState::Builder::getLatActive() {
+inline bool CarState::Builder::getAccEnabled() {
   return _builder.getDataField<bool>(
       ::capnp::bounded<370>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setLatActive(bool value) {
+inline void CarState::Builder::setAccEnabled(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<370>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool CarState::Reader::getLatActive() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<371>() * ::capnp::ELEMENTS);
+}
+
+inline bool CarState::Builder::getLatActive() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<371>() * ::capnp::ELEMENTS);
+}
+inline void CarState::Builder::setLatActive(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<371>() * ::capnp::ELEMENTS, value);
 }
 
 inline  ::int32_t CarState::Reader::getGapAdjustCruiseTr() const {
@@ -5299,16 +5320,16 @@ inline void CarState::Builder::setGapAdjustCruiseTr( ::int32_t value) {
 
 inline bool CarState::Reader::getEndToEndLong() const {
   return _reader.getDataField<bool>(
-      ::capnp::bounded<371>() * ::capnp::ELEMENTS);
+      ::capnp::bounded<372>() * ::capnp::ELEMENTS);
 }
 
 inline bool CarState::Builder::getEndToEndLong() {
   return _builder.getDataField<bool>(
-      ::capnp::bounded<371>() * ::capnp::ELEMENTS);
+      ::capnp::bounded<372>() * ::capnp::ELEMENTS);
 }
 inline void CarState::Builder::setEndToEndLong(bool value) {
   _builder.setDataField<bool>(
-      ::capnp::bounded<371>() * ::capnp::ELEMENTS, value);
+      ::capnp::bounded<372>() * ::capnp::ELEMENTS, value);
 }
 
 inline bool CarState::Reader::hasCustomStockLong() const {
@@ -5378,16 +5399,16 @@ inline void CarState::CustomStockLong::Builder::setFinalSpeedKph(float value) {
       ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
 }
 
-inline float CarState::CustomStockLong::Reader::getVCruiseKphPrev() const {
+inline float CarState::CustomStockLong::Reader::getVCruiseKphPrevDEPRECATED() const {
   return _reader.getDataField<float>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS);
 }
 
-inline float CarState::CustomStockLong::Builder::getVCruiseKphPrev() {
+inline float CarState::CustomStockLong::Builder::getVCruiseKphPrevDEPRECATED() {
   return _builder.getDataField<float>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS);
 }
-inline void CarState::CustomStockLong::Builder::setVCruiseKphPrev(float value) {
+inline void CarState::CustomStockLong::Builder::setVCruiseKphPrevDEPRECATED(float value) {
   _builder.setDataField<float>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
 }
@@ -7701,16 +7722,16 @@ inline void CarParams::Builder::setHasStockCameraDEPRECATED(bool value) {
       ::capnp::bounded<15>() * ::capnp::ELEMENTS, value);
 }
 
-inline float CarParams::Reader::getLongitudinalActuatorDelayUpperBound() const {
+inline float CarParams::Reader::getLongitudinalActuatorDelay() const {
   return _reader.getDataField<float>(
       ::capnp::bounded<25>() * ::capnp::ELEMENTS);
 }
 
-inline float CarParams::Builder::getLongitudinalActuatorDelayUpperBound() {
+inline float CarParams::Builder::getLongitudinalActuatorDelay() {
   return _builder.getDataField<float>(
       ::capnp::bounded<25>() * ::capnp::ELEMENTS);
 }
-inline void CarParams::Builder::setLongitudinalActuatorDelayUpperBound(float value) {
+inline void CarParams::Builder::setLongitudinalActuatorDelay(float value) {
   _builder.setDataField<float>(
       ::capnp::bounded<25>() * ::capnp::ELEMENTS, value);
 }
@@ -7743,16 +7764,16 @@ inline void CarParams::Builder::setStopAccel(float value) {
       ::capnp::bounded<27>() * ::capnp::ELEMENTS, value);
 }
 
-inline float CarParams::Reader::getLongitudinalActuatorDelayLowerBound() const {
+inline float CarParams::Reader::getLongitudinalActuatorDelayLowerBoundDEPRECATEDDEPRECATED() const {
   return _reader.getDataField<float>(
       ::capnp::bounded<28>() * ::capnp::ELEMENTS);
 }
 
-inline float CarParams::Builder::getLongitudinalActuatorDelayLowerBound() {
+inline float CarParams::Builder::getLongitudinalActuatorDelayLowerBoundDEPRECATEDDEPRECATED() {
   return _builder.getDataField<float>(
       ::capnp::bounded<28>() * ::capnp::ELEMENTS);
 }
-inline void CarParams::Builder::setLongitudinalActuatorDelayLowerBound(float value) {
+inline void CarParams::Builder::setLongitudinalActuatorDelayLowerBoundDEPRECATEDDEPRECATED(float value) {
   _builder.setDataField<float>(
       ::capnp::bounded<28>() * ::capnp::ELEMENTS, value);
 }
@@ -8583,78 +8604,78 @@ inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> CarPara
       ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
 
-inline bool CarParams::LongitudinalPIDTuning::Reader::hasDeadzoneBP() const {
+inline bool CarParams::LongitudinalPIDTuning::Reader::hasDeadzoneBPDEPRECATED() const {
   return !_reader.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
 }
-inline bool CarParams::LongitudinalPIDTuning::Builder::hasDeadzoneBP() {
+inline bool CarParams::LongitudinalPIDTuning::Builder::hasDeadzoneBPDEPRECATED() {
   return !_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader CarParams::LongitudinalPIDTuning::Reader::getDeadzoneBP() const {
+inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader CarParams::LongitudinalPIDTuning::Reader::getDeadzoneBPDEPRECATED() const {
   return ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::get(_reader.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder CarParams::LongitudinalPIDTuning::Builder::getDeadzoneBP() {
+inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder CarParams::LongitudinalPIDTuning::Builder::getDeadzoneBPDEPRECATED() {
   return ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::get(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
-inline void CarParams::LongitudinalPIDTuning::Builder::setDeadzoneBP( ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader value) {
+inline void CarParams::LongitudinalPIDTuning::Builder::setDeadzoneBPDEPRECATED( ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader value) {
   ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::set(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS), value);
 }
-inline void CarParams::LongitudinalPIDTuning::Builder::setDeadzoneBP(::kj::ArrayPtr<const float> value) {
+inline void CarParams::LongitudinalPIDTuning::Builder::setDeadzoneBPDEPRECATED(::kj::ArrayPtr<const float> value) {
   ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::set(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder CarParams::LongitudinalPIDTuning::Builder::initDeadzoneBP(unsigned int size) {
+inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder CarParams::LongitudinalPIDTuning::Builder::initDeadzoneBPDEPRECATED(unsigned int size) {
   return ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::init(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS), size);
 }
-inline void CarParams::LongitudinalPIDTuning::Builder::adoptDeadzoneBP(
+inline void CarParams::LongitudinalPIDTuning::Builder::adoptDeadzoneBPDEPRECATED(
     ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>&& value) {
   ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::adopt(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> CarParams::LongitudinalPIDTuning::Builder::disownDeadzoneBP() {
+inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> CarParams::LongitudinalPIDTuning::Builder::disownDeadzoneBPDEPRECATED() {
   return ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::disown(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
 
-inline bool CarParams::LongitudinalPIDTuning::Reader::hasDeadzoneV() const {
+inline bool CarParams::LongitudinalPIDTuning::Reader::hasDeadzoneVDEPRECATED() const {
   return !_reader.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
 }
-inline bool CarParams::LongitudinalPIDTuning::Builder::hasDeadzoneV() {
+inline bool CarParams::LongitudinalPIDTuning::Builder::hasDeadzoneVDEPRECATED() {
   return !_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader CarParams::LongitudinalPIDTuning::Reader::getDeadzoneV() const {
+inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader CarParams::LongitudinalPIDTuning::Reader::getDeadzoneVDEPRECATED() const {
   return ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::get(_reader.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder CarParams::LongitudinalPIDTuning::Builder::getDeadzoneV() {
+inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder CarParams::LongitudinalPIDTuning::Builder::getDeadzoneVDEPRECATED() {
   return ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::get(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS));
 }
-inline void CarParams::LongitudinalPIDTuning::Builder::setDeadzoneV( ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader value) {
+inline void CarParams::LongitudinalPIDTuning::Builder::setDeadzoneVDEPRECATED( ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Reader value) {
   ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::set(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS), value);
 }
-inline void CarParams::LongitudinalPIDTuning::Builder::setDeadzoneV(::kj::ArrayPtr<const float> value) {
+inline void CarParams::LongitudinalPIDTuning::Builder::setDeadzoneVDEPRECATED(::kj::ArrayPtr<const float> value) {
   ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::set(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder CarParams::LongitudinalPIDTuning::Builder::initDeadzoneV(unsigned int size) {
+inline  ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>::Builder CarParams::LongitudinalPIDTuning::Builder::initDeadzoneVDEPRECATED(unsigned int size) {
   return ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::init(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS), size);
 }
-inline void CarParams::LongitudinalPIDTuning::Builder::adoptDeadzoneV(
+inline void CarParams::LongitudinalPIDTuning::Builder::adoptDeadzoneVDEPRECATED(
     ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>&& value) {
   ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::adopt(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> CarParams::LongitudinalPIDTuning::Builder::disownDeadzoneV() {
+inline ::capnp::Orphan< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>> CarParams::LongitudinalPIDTuning::Builder::disownDeadzoneVDEPRECATED() {
   return ::capnp::_::PointerHelpers< ::capnp::List<float,  ::capnp::Kind::PRIMITIVE>>::disown(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS));
 }

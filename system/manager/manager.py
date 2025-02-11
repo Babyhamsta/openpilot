@@ -8,6 +8,7 @@ import traceback
 from cereal import custom
 import cereal.messaging as messaging
 import openpilot.system.sentry as sentry
+from openpilot.common.api.sunnylink import UNREGISTERED_SUNNYLINK_DONGLE_ID
 from openpilot.common.params import Params, ParamKeyType
 from openpilot.common.text_window import TextWindow
 from openpilot.system.hardware import HARDWARE, PC
@@ -42,6 +43,7 @@ def manager_init() -> None:
     ("OpenpilotEnabledToggle", "1"),
     ("LongitudinalPersonality", str(custom.LongitudinalPersonalitySP.standard)),
 
+    ("AccelPersonality", str(custom.AccelerationPersonality.stock)),
     ("AccMadsCombo", "1"),
     ("AutoLaneChangeTimer", "0"),
     ("AutoLaneChangeBsmDelay", "1"),
@@ -63,26 +65,30 @@ def manager_init() -> None:
     ("DisengageLateralOnBrake", "0"),
     ("DrivingModelGeneration", "0"),
     ("DynamicLaneProfile", "1"),
+    ("DynamicPersonality", "0"),
     ("EnableMads", "1"),
     ("EnhancedScc", "0"),
     ("FeatureStatus", "1"),
     ("HandsOnWheelMonitoring", "0"),
     ("HasAcceptedTermsSP", "0"),
     ("HideVEgoUi", "0"),
+    ("HyundaiCruiseMainDefault", "0"),
+    ("HyundaiRadarTracksAvailable", "0"),
+    ("HyundaiRadarTracksAvailableCache", "0"),
     ("LastSpeedLimitSignTap", "0"),
     ("LkasToggle", "0"),
     ("MadsIconToggle", "1"),
-    ("MapboxFullScreen", "0"),
     ("MapdVersion", f"{VERSION}"),
     ("MaxTimeOffroad", "9"),
     ("NNFF", "0"),
-    ("NNFFNoLateralJerk", "0"),
     ("OnroadScreenOff", "-2"),
     ("OnroadScreenOffBrightness", "50"),
     ("OnroadScreenOffEvent", "1"),
     ("OnroadSettings", "1"),
     ("PathOffset", "0"),
     ("PauseLateralSpeed", "0"),
+    ("PCMVCruiseOverride", "0"),
+    ("PCMVCruiseOverrideSpeed", "30"),
     ("ReverseAccChange", "0"),
     ("ScreenRecorder", "1"),
     ("ShowDebugUI", "1"),
@@ -96,9 +102,12 @@ def manager_init() -> None:
     ("StandStillTimer", "0"),
     ("StockLongToyota", "0"),
     ("TorqueDeadzoneDeg", "0"),
-    ("TorqueFriction", "1"),
-    ("TorqueLateralJerk", "0"),
+    ("TorqueFriction", "10"),
     ("TorqueMaxLatAccel", "250"),
+    ("ToyotaAutoLockBySpeed", "0"),
+    ("ToyotaAutoUnlockByShifter", "0"),
+    ("ToyotaDriveMode", "0"),
+    ("ToyotaEnhancedBsm", "0"),
     ("TrueVEgoUi", "0"),
     ("TurnSpeedControl", "0"),
     ("TurnVisionControl", "0"),
@@ -108,13 +117,16 @@ def manager_init() -> None:
     ("OsmDownloadedDate", "0"),
     ("OSMDownloadProgress", "{}"),
     ("SidebarTemperatureOptions", "0"),
-    ("SunnylinkEnabled", "0"),
+    ("SunnylinkEnabled", "1"),
+    ("SunnylinkDongleId", f"{UNREGISTERED_SUNNYLINK_DONGLE_ID}"),
     ("CustomDrivingModel", "0"),
     ("DrivingModelGeneration", "4"),
     ("LastSunnylinkPingTime", "0"),
+    ("EnableGitlabRunner", "0"),
+    ("EnableSunnylinkUploader", "0"),
   ]
   if not PC:
-    default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
+    default_params.append(("LastUpdateTime", datetime.datetime.now(datetime.UTC).replace(tzinfo=None).isoformat().encode('utf8')))
 
   if params.get_bool("RecordFrontLock"):
     params.put_bool("RecordFront", True)

@@ -25,8 +25,33 @@ enum class LongitudinalPersonalitySP_d92113aa7c18cdf6: uint16_t {
   MODERATE,
   STANDARD,
   RELAXED,
+  OVERTAKE,
 };
 CAPNP_DECLARE_ENUM(LongitudinalPersonalitySP, d92113aa7c18cdf6);
+CAPNP_DECLARE_SCHEMA(f40bf11ea3a7a163);
+enum class AccelerationPersonality_f40bf11ea3a7a163: uint16_t {
+  SPORT,
+  NORMAL,
+  ECO,
+  STOCK,
+};
+CAPNP_DECLARE_ENUM(AccelerationPersonality, f40bf11ea3a7a163);
+CAPNP_DECLARE_SCHEMA(91cbf59645e9e0b9);
+enum class ModelGeneration_91cbf59645e9e0b9: uint16_t {
+  DEFAULT,
+  ONE,
+  TWO,
+  THREE,
+  FOUR,
+  FIVE,
+};
+CAPNP_DECLARE_ENUM(ModelGeneration, 91cbf59645e9e0b9);
+CAPNP_DECLARE_SCHEMA(ddeb7e9fc0e0e044);
+enum class MpcSource_ddeb7e9fc0e0e044: uint16_t {
+  ACC,
+  BLENDED,
+};
+CAPNP_DECLARE_ENUM(MpcSource, ddeb7e9fc0e0e044);
 CAPNP_DECLARE_SCHEMA(81c2f05a394cf4af);
 CAPNP_DECLARE_SCHEMA(b6a9042bc207bf27);
 CAPNP_DECLARE_SCHEMA(88da8426fae53f07);
@@ -98,6 +123,12 @@ CAPNP_DECLARE_SCHEMA(a1680744031fdb2d);
 namespace cereal {
 
 typedef ::capnp::schemas::LongitudinalPersonalitySP_d92113aa7c18cdf6 LongitudinalPersonalitySP;
+
+typedef ::capnp::schemas::AccelerationPersonality_f40bf11ea3a7a163 AccelerationPersonality;
+
+typedef ::capnp::schemas::ModelGeneration_91cbf59645e9e0b9 ModelGeneration;
+
+typedef ::capnp::schemas::MpcSource_ddeb7e9fc0e0e044 MpcSource;
 
 struct ControlsStateSP {
   ControlsStateSP() = delete;
@@ -265,7 +296,7 @@ struct LongitudinalPlanSP {
 
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(aedffd8f31e7b55d, 7, 3)
+    CAPNP_DECLARE_STRUCT_HEADER(aedffd8f31e7b55d, 8, 3)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -422,6 +453,12 @@ public:
 
   inline  ::cereal::LongitudinalPersonalitySP getPersonality() const;
 
+  inline bool getDynamicPersonality() const;
+
+  inline  ::cereal::AccelerationPersonality getAccelPersonality() const;
+
+  inline bool getOvertakingAccelerationAssist() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -462,6 +499,15 @@ public:
 
   inline  ::cereal::LongitudinalPersonalitySP getPersonality();
   inline void setPersonality( ::cereal::LongitudinalPersonalitySP value);
+
+  inline bool getDynamicPersonality();
+  inline void setDynamicPersonality(bool value);
+
+  inline  ::cereal::AccelerationPersonality getAccelPersonality();
+  inline void setAccelPersonality( ::cereal::AccelerationPersonality value);
+
+  inline bool getOvertakingAccelerationAssist();
+  inline void setOvertakingAccelerationAssist(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -1209,8 +1255,8 @@ public:
 
   inline float getVisionMaxPredLatAcc() const;
 
-  inline bool hasE2eBlended() const;
-  inline  ::capnp::Text::Reader getE2eBlended() const;
+  inline bool hasE2eBlendedDEPRECATED() const;
+  inline  ::capnp::Text::Reader getE2eBlendedDEPRECATED() const;
 
   inline bool hasEvents() const;
   inline  ::capnp::List< ::cereal::CarEvent,  ::capnp::Kind::STRUCT>::Reader getEvents() const;
@@ -1220,6 +1266,10 @@ public:
   inline  ::cereal::LongitudinalPersonalitySP getPersonalityDEPRECATED() const;
 
   inline bool getE2eStatus() const;
+
+  inline  ::cereal::MpcSource getMpcSource() const;
+
+  inline bool getDynamicExperimentalControl() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -1308,12 +1358,12 @@ public:
   inline float getVisionMaxPredLatAcc();
   inline void setVisionMaxPredLatAcc(float value);
 
-  inline bool hasE2eBlended();
-  inline  ::capnp::Text::Builder getE2eBlended();
-  inline void setE2eBlended( ::capnp::Text::Reader value);
-  inline  ::capnp::Text::Builder initE2eBlended(unsigned int size);
-  inline void adoptE2eBlended(::capnp::Orphan< ::capnp::Text>&& value);
-  inline ::capnp::Orphan< ::capnp::Text> disownE2eBlended();
+  inline bool hasE2eBlendedDEPRECATED();
+  inline  ::capnp::Text::Builder getE2eBlendedDEPRECATED();
+  inline void setE2eBlendedDEPRECATED( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initE2eBlendedDEPRECATED(unsigned int size);
+  inline void adoptE2eBlendedDEPRECATED(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownE2eBlendedDEPRECATED();
 
   inline bool hasEvents();
   inline  ::capnp::List< ::cereal::CarEvent,  ::capnp::Kind::STRUCT>::Builder getEvents();
@@ -1330,6 +1380,12 @@ public:
 
   inline bool getE2eStatus();
   inline void setE2eStatus(bool value);
+
+  inline  ::cereal::MpcSource getMpcSource();
+  inline void setMpcSource( ::cereal::MpcSource value);
+
+  inline bool getDynamicExperimentalControl();
+  inline void setDynamicExperimentalControl(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -1872,6 +1928,12 @@ public:
 
   inline bool getLaneChangeEdgeBlock() const;
 
+  inline bool getCustomModel() const;
+
+  inline  ::cereal::ModelGeneration getModelGeneration() const;
+
+  inline  ::uint32_t getModelCapabilities() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -1905,6 +1967,15 @@ public:
 
   inline bool getLaneChangeEdgeBlock();
   inline void setLaneChangeEdgeBlock(bool value);
+
+  inline bool getCustomModel();
+  inline void setCustomModel(bool value);
+
+  inline  ::cereal::ModelGeneration getModelGeneration();
+  inline void setModelGeneration( ::cereal::ModelGeneration value);
+
+  inline  ::uint32_t getModelCapabilities();
+  inline void setModelCapabilities( ::uint32_t value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -2209,6 +2280,48 @@ inline  ::cereal::LongitudinalPersonalitySP ControlsStateSP::Builder::getPersona
 inline void ControlsStateSP::Builder::setPersonality( ::cereal::LongitudinalPersonalitySP value) {
   _builder.setDataField< ::cereal::LongitudinalPersonalitySP>(
       ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool ControlsStateSP::Reader::getDynamicPersonality() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<32>() * ::capnp::ELEMENTS);
+}
+
+inline bool ControlsStateSP::Builder::getDynamicPersonality() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<32>() * ::capnp::ELEMENTS);
+}
+inline void ControlsStateSP::Builder::setDynamicPersonality(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<32>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::cereal::AccelerationPersonality ControlsStateSP::Reader::getAccelPersonality() const {
+  return _reader.getDataField< ::cereal::AccelerationPersonality>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+
+inline  ::cereal::AccelerationPersonality ControlsStateSP::Builder::getAccelPersonality() {
+  return _builder.getDataField< ::cereal::AccelerationPersonality>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+inline void ControlsStateSP::Builder::setAccelPersonality( ::cereal::AccelerationPersonality value) {
+  _builder.setDataField< ::cereal::AccelerationPersonality>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool ControlsStateSP::Reader::getOvertakingAccelerationAssist() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<33>() * ::capnp::ELEMENTS);
+}
+
+inline bool ControlsStateSP::Builder::getOvertakingAccelerationAssist() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<33>() * ::capnp::ELEMENTS);
+}
+inline void ControlsStateSP::Builder::setOvertakingAccelerationAssist(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<33>() * ::capnp::ELEMENTS, value);
 }
 
 inline bool ControlsStateSP::LateralTorqueState::Reader::hasNnLog() const {
@@ -2912,36 +3025,36 @@ inline void LongitudinalPlanSP::Builder::setVisionMaxPredLatAcc(float value) {
       ::capnp::bounded<12>() * ::capnp::ELEMENTS, value);
 }
 
-inline bool LongitudinalPlanSP::Reader::hasE2eBlended() const {
+inline bool LongitudinalPlanSP::Reader::hasE2eBlendedDEPRECATED() const {
   return !_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline bool LongitudinalPlanSP::Builder::hasE2eBlended() {
+inline bool LongitudinalPlanSP::Builder::hasE2eBlendedDEPRECATED() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::Text::Reader LongitudinalPlanSP::Reader::getE2eBlended() const {
+inline  ::capnp::Text::Reader LongitudinalPlanSP::Reader::getE2eBlendedDEPRECATED() const {
   return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::capnp::Text::Builder LongitudinalPlanSP::Builder::getE2eBlended() {
+inline  ::capnp::Text::Builder LongitudinalPlanSP::Builder::getE2eBlendedDEPRECATED() {
   return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline void LongitudinalPlanSP::Builder::setE2eBlended( ::capnp::Text::Reader value) {
+inline void LongitudinalPlanSP::Builder::setE2eBlendedDEPRECATED( ::capnp::Text::Reader value) {
   ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::Text::Builder LongitudinalPlanSP::Builder::initE2eBlended(unsigned int size) {
+inline  ::capnp::Text::Builder LongitudinalPlanSP::Builder::initE2eBlendedDEPRECATED(unsigned int size) {
   return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), size);
 }
-inline void LongitudinalPlanSP::Builder::adoptE2eBlended(
+inline void LongitudinalPlanSP::Builder::adoptE2eBlendedDEPRECATED(
     ::capnp::Orphan< ::capnp::Text>&& value) {
   ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::Text> LongitudinalPlanSP::Builder::disownE2eBlended() {
+inline ::capnp::Orphan< ::capnp::Text> LongitudinalPlanSP::Builder::disownE2eBlendedDEPRECATED() {
   return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
@@ -3020,6 +3133,34 @@ inline bool LongitudinalPlanSP::Builder::getE2eStatus() {
 inline void LongitudinalPlanSP::Builder::setE2eStatus(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<162>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::cereal::MpcSource LongitudinalPlanSP::Reader::getMpcSource() const {
+  return _reader.getDataField< ::cereal::MpcSource>(
+      ::capnp::bounded<28>() * ::capnp::ELEMENTS);
+}
+
+inline  ::cereal::MpcSource LongitudinalPlanSP::Builder::getMpcSource() {
+  return _builder.getDataField< ::cereal::MpcSource>(
+      ::capnp::bounded<28>() * ::capnp::ELEMENTS);
+}
+inline void LongitudinalPlanSP::Builder::setMpcSource( ::cereal::MpcSource value) {
+  _builder.setDataField< ::cereal::MpcSource>(
+      ::capnp::bounded<28>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool LongitudinalPlanSP::Reader::getDynamicExperimentalControl() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<163>() * ::capnp::ELEMENTS);
+}
+
+inline bool LongitudinalPlanSP::Builder::getDynamicExperimentalControl() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<163>() * ::capnp::ELEMENTS);
+}
+inline void LongitudinalPlanSP::Builder::setDynamicExperimentalControl(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<163>() * ::capnp::ELEMENTS, value);
 }
 
 inline float LateralPlanSP::Reader::getLaneWidth() const {
@@ -3677,6 +3818,48 @@ inline bool ModelDataV2SP::Builder::getLaneChangeEdgeBlock() {
 }
 inline void ModelDataV2SP::Builder::setLaneChangeEdgeBlock(bool value) {
   _builder.setDataField<bool>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool ModelDataV2SP::Reader::getCustomModel() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+
+inline bool ModelDataV2SP::Builder::getCustomModel() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+inline void ModelDataV2SP::Builder::setCustomModel(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::cereal::ModelGeneration ModelDataV2SP::Reader::getModelGeneration() const {
+  return _reader.getDataField< ::cereal::ModelGeneration>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+
+inline  ::cereal::ModelGeneration ModelDataV2SP::Builder::getModelGeneration() {
+  return _builder.getDataField< ::cereal::ModelGeneration>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+inline void ModelDataV2SP::Builder::setModelGeneration( ::cereal::ModelGeneration value) {
+  _builder.setDataField< ::cereal::ModelGeneration>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t ModelDataV2SP::Reader::getModelCapabilities() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t ModelDataV2SP::Builder::getModelCapabilities() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+inline void ModelDataV2SP::Builder::setModelCapabilities( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
       ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
 }
 
