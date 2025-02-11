@@ -6,7 +6,11 @@
 #include <atomic>
 
 #define DEFAULT_SEGMENT_SIZE (10 * 1024 * 1024)
+<<<<<<< HEAD
 #define NUM_READERS 20
+=======
+#define NUM_READERS 23
+>>>>>>> upstream/dev-c3
 #define ALIGN(n) ((n + (8 - 1)) & -8)
 
 #define UNUSED(x) (void)x

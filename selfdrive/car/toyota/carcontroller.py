@@ -1,15 +1,16 @@
 from cereal import car
+from common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import clip, interp
-from openpilot.common.params import Params
-from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, \
-                          create_gas_interceptor_command, make_can_msg
+from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, make_can_msg, make_tester_present_msg, \
+                                    create_gas_interceptor_command
 from openpilot.selfdrive.car.interfaces import CarControllerBase
 from openpilot.selfdrive.car.toyota import toyotacan
 from openpilot.selfdrive.car.toyota.values import CAR, STATIC_DSU_MSGS, NO_STOP_TIMER_CAR, TSS2_CAR, \
-                                        MIN_ACC_SPEED, PEDAL_TRANSITION, CarControllerParams, ToyotaFlags, \
+                                        MIN_ACC_SPEED, PEDAL_TRANSITION, CarControllerParams, ToyotaFlags, ToyotaFlagsSP, \
                                         UNSUPPORTED_DSU_CAR
 from opendbc.can.packer import CANPacker
 
+GearShifter = car.CarState.GearShifter
 SteerControlType = car.CarParams.SteerControlType
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
@@ -26,12 +27,17 @@ MAX_USER_TORQUE = 500
 MAX_LTA_ANGLE = 94.9461  # deg
 MAX_LTA_DRIVER_TORQUE_ALLOWANCE = 150  # slightly above steering pressed allows some resistance when changing lanes
 
+LEFT_BLINDSPOT = b"\x41"
+RIGHT_BLINDSPOT = b"\x42"
+
+UNLOCK_CMD = b"\x40\x05\x30\x11\x00\x40\x00\x00"
+LOCK_CMD = b"\x40\x05\x30\x11\x00\x80\x00\x00"
+
 
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP, VM):
-    self.CP = CP
+    super().__init__(dbc_name, CP, VM)
     self.params = CarControllerParams(self.CP)
-    self.frame = 0
     self.last_steer = 0
     self.last_angle = 0
     self.alert_active = False
@@ -44,11 +50,17 @@ class CarController(CarControllerBase):
     self.gas = 0
     self.accel = 0
 
-    self.param_s = Params()
-    self._reverse_acc_change = self.param_s.get_bool("ReverseAccChange")
-    self._sng_hack = self.param_s.get_bool("ToyotaSnG")
+    self.left_blindspot_debug_enabled = False
+    self.right_blindspot_debug_enabled = False
+    self.last_blindspot_frame = 0
+
+    self._auto_lock_speed = 0.0
+    self._auto_lock_once = False
+    self._gear_prev = GearShifter.park
 
   def update(self, CC, CS, now_nanos):
+    self._auto_lock_speed = 10 * (CV.KPH_TO_MS if CS.params_list.is_metric else CV.MPH_TO_MS)
+
     actuators = CC.actuators
     hud_control = CC.hudControl
     pcm_cancel_cmd = CC.cruiseControl.cancel
@@ -56,6 +68,21 @@ class CarController(CarControllerBase):
 
     # *** control msgs ***
     can_sends = []
+
+    # automatic door locking and unlocking logic (@dragonpilot-community)
+    # thanks to AlexandreSato & cydia2020
+    # https://github.com/AlexandreSato/animalpilot/blob/personal/doors.py
+    gear = CS.out.gearShifter
+    if not CS.out.doorOpen:
+      if gear == GearShifter.park and self._gear_prev != gear:
+        if CS.params_list.toyota_auto_unlock_by_shifter:
+          can_sends.append(make_can_msg(0x750, UNLOCK_CMD, 0))
+        self._auto_lock_once = False
+      elif gear == GearShifter.drive and not self._auto_lock_once and CS.out.vEgo >= self._auto_lock_speed:
+        if CS.params_list.toyota_auto_lock_by_speed:
+          can_sends.append(make_can_msg(0x750, LOCK_CMD, 0))
+        self._auto_lock_once = True
+    self._gear_prev = gear
 
     # *** steer torque ***
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
@@ -133,7 +160,7 @@ class CarController(CarControllerBase):
 
     # on entering standstill, send standstill request
     if CS.out.standstill and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptorDEPRECATED) and \
-      not self._sng_hack:
+      not CS.params_list.toyota_sng_hack:
       self.standstill_req = True
     if CS.pcm_acc_status != 8:
       # pcm entered standstill or it's disabled
@@ -148,7 +175,7 @@ class CarController(CarControllerBase):
     # we can spam can to cancel the system even if we are using lat only control
     if (self.frame % 3 == 0 and self.CP.openpilotLongitudinalControl) or pcm_cancel_cmd:
       lead = hud_control.leadVisible or CS.out.vEgo < 12.  # at low speed we always assume the lead is present so ACC can be engaged
-      reverse_acc = 2 if self._reverse_acc_change else 1
+      reverse_acc = 2 if CS.params_list.reverse_acc_change else 1
 
       # Press distance button until we are at the correct bar length. Only change while enabled to avoid skipping startup popup
       if self.frame % 6 == 0 and self.CP.openpilotLongitudinalControl:
@@ -203,7 +230,10 @@ class CarController(CarControllerBase):
 
     # keep radar disabled
     if self.frame % 20 == 0 and self.CP.flags & ToyotaFlags.DISABLE_RADAR.value:
-      can_sends.append([0x750, 0, b"\x0F\x02\x3E\x00\x00\x00\x00\x00", 0])
+      can_sends.append(make_tester_present_msg(0x750, 0, 0xF))
+
+    if self.CP.spFlags & ToyotaFlagsSP.SP_ENHANCED_BSM and self.frame > 200:
+      can_sends.extend(self.create_enhanced_bsm_messages(CS, 20, True))
 
     new_actuators = actuators.as_builder()
     new_actuators.steer = apply_steer / self.params.STEER_MAX
@@ -214,3 +244,45 @@ class CarController(CarControllerBase):
 
     self.frame += 1
     return new_actuators, can_sends
+
+  # Enhanced BSM (@arne182, @rav4kumar)
+  def create_enhanced_bsm_messages(self, CS: car.CarState, e_bsm_rate: int = 20, always_on: bool = True):
+    # let's keep all the commented out code for easy debug purpose for future.
+    can_sends = []
+
+    # left bsm
+    if not self.left_blindspot_debug_enabled:
+      if always_on or CS.out.vEgo > 6:  # eagle eye camera will stop working if left bsm is switched on under 6m/s
+        can_sends.append(toyotacan.create_set_bsm_debug_mode(LEFT_BLINDSPOT, True))
+        self.left_blindspot_debug_enabled = True
+        # print("bsm debug left, on")
+    else:
+      if not always_on and self.frame - self.last_blindspot_frame > 50:
+        can_sends.append(toyotacan.create_set_bsm_debug_mode(LEFT_BLINDSPOT, False))
+        self.left_blindspot_debug_enabled = False
+        # print("bsm debug left, off")
+      if self.frame % e_bsm_rate == 0:
+        can_sends.append(toyotacan.create_bsm_polling_status(LEFT_BLINDSPOT))
+        # if CS.out.leftBlinker:
+        self.last_blindspot_frame = self.frame
+        # print(self.last_blindspot_frame)
+        # print("bsm poll left")
+    # right bsm
+    if not self.right_blindspot_debug_enabled:
+      if always_on or CS.out.vEgo > 6:  # eagle eye camera will stop working if right bsm is switched on under 6m/s
+        can_sends.append(toyotacan.create_set_bsm_debug_mode(RIGHT_BLINDSPOT, True))
+        self.right_blindspot_debug_enabled = True
+        # print("bsm debug right, on")
+    else:
+      if not always_on and self.frame - self.last_blindspot_frame > 50:
+        can_sends.append(toyotacan.create_set_bsm_debug_mode(RIGHT_BLINDSPOT, False))
+        self.right_blindspot_debug_enabled = False
+        # print("bsm debug right, off")
+      if self.frame % e_bsm_rate == e_bsm_rate / 2:
+        can_sends.append(toyotacan.create_bsm_polling_status(RIGHT_BLINDSPOT))
+        # if CS.out.rightBlinker:
+        self.last_blindspot_frame = self.frame
+        # print(self.last_blindspot_frame)
+        # print("bsm poll right")
+
+    return can_sends

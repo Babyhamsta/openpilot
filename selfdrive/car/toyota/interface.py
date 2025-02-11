@@ -5,7 +5,7 @@ from panda import Panda
 from panda.python import uds
 from openpilot.selfdrive.car.toyota.values import Ecu, CAR, DBC, ToyotaFlags, ToyotaFlagsSP, CarControllerParams, TSS2_CAR, RADAR_ACC_CAR, NO_DSU_CAR, \
                                         MIN_ACC_SPEED, EPS_SCALE, UNSUPPORTED_DSU_CAR, NO_STOP_TIMER_CAR, ANGLE_CONTROL_CAR
-from openpilot.selfdrive.car import create_button_events, get_safety_config, create_mads_event
+from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.disable_ecu import disable_ecu
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 
@@ -160,24 +160,40 @@ class CarInterface(CarInterfaceBase):
 
     sp_tss2_long_tune = Params().get_bool("ToyotaTSS2Long")
 
+    # Last updated: September 29, 2024
+    def custom_tss2_longitudinal_tuning(): # hand tuned
+      ret.vEgoStopping = 0.25
+      ret.vEgoStarting = 0.01
+      ret.stoppingDecelRate = 0.006
+
+    def default_tss2_longitudinal_tuning(): # stock comma
+      ret.vEgoStopping = 0.25
+      ret.vEgoStarting = 0.10
+      ret.stoppingDecelRate = 0.007  # reach stopping target smoothly
+
+    def default_longitudinal_tuning(): # stock comma
+      tune.kiBP = [0., 5., 35.]
+      tune.kiV = [3.6, 2.4, 1.5]
+
     tune = ret.longitudinalTuning
-    tune.deadzoneBP = [0., 9.]
-    tune.deadzoneV = [.0, .15]
     if candidate in TSS2_CAR or ret.enableGasInterceptorDEPRECATED:
-      tune.kpBP = [0., 5., 20., 30.] if sp_tss2_long_tune else [0., 5., 20.]
-      tune.kpV = [1.3, 1.0, 0.7, 0.1] if sp_tss2_long_tune else [1.3, 1.0, 0.7]
-      tune.kiBP = [0.,   1.,    2.,    3.,   4.,   5.,    12.,  20.,  27., 40.] if sp_tss2_long_tune else [0., 5., 12., 20., 27.]
-      tune.kiV = [.348, .3361, .3168, .2831, .2571, .226, .198, .17,  .10, .01] if sp_tss2_long_tune else [.35, .23, .20, .17, .1]
+      if sp_tss2_long_tune:
+        tune.kiBP = [0.,  5.,   12.,  20.,  27.,  36.,  40.]
+        tune.kiV = [0.34, 0.234, 0.20, 0.17, 0.105, 0.09, 0.08]
+        custom_tss2_longitudinal_tuning()
+      else:
+        tune.kpV = [0.0]
+        tune.kiV = [0.5]
       if candidate in TSS2_CAR:
-        ret.vEgoStopping = 0.15 if sp_tss2_long_tune else 0.25
-        ret.vEgoStarting = 0.15 if sp_tss2_long_tune else 0.25
-        ret.stopAccel = -0.4 if sp_tss2_long_tune else 0
-        ret.stoppingDecelRate = 0.05 if sp_tss2_long_tune else 0.3  # reach stopping target smoothly
+        default_tss2_longitudinal_tuning()
     else:
-      tune.kpBP = [0., 5., 35.]
-      tune.kiBP = [0., 35.]
-      tune.kpV = [3.6, 2.4, 1.5]
-      tune.kiV = [0.54, 0.36]
+      default_longitudinal_tuning()
+
+    if Params().get_bool("ToyotaEnhancedBsm"):
+      ret.spFlags |= ToyotaFlagsSP.SP_ENHANCED_BSM.value
+
+    if candidate == CAR.TOYOTA_PRIUS_TSS2:
+      ret.spFlags |= ToyotaFlagsSP.SP_NEED_DEBUG_BSM.value
 
     return ret
 
@@ -191,22 +207,17 @@ class CarInterface(CarInterfaceBase):
   # returns a car.CarState
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
-    self.sp_update_params()
-
-    buttonEvents = []
-    distance_button = 0
 
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
-      buttonEvents = create_button_events(self.CS.distance_button, self.CS.prev_distance_button, {1: ButtonType.gapAdjustCruise})
-      distance_button = self.CS.distance_button
+      self.CS.button_events = create_button_events(self.CS.distance_button, self.CS.prev_distance_button, {1: ButtonType.gapAdjustCruise})
 
-    self.CS.mads_enabled = self.get_sp_cruise_main_state(ret, self.CS)
+    self.CS.mads_enabled = self.get_sp_cruise_main_state(ret)
 
     if ret.cruiseState.available:
       if self.enable_mads:
         if not self.CS.prev_mads_enabled and self.CS.mads_enabled:
           self.CS.madsEnabled = True
-        if self.lkas_toggle:
+        if self.CS.params_list.toyota_lkas_toggle:
           if self.CS.lta_status_active:
             if (self.CS.prev_lkas_enabled == 16 and self.CS.lkas_enabled == 0) or \
               (self.CS.prev_lkas_enabled == 0 and self.CS.lkas_enabled == 16):
@@ -215,41 +226,28 @@ class CarInterface(CarInterfaceBase):
             if (not self.CS.prev_lkas_enabled and self.CS.lkas_enabled) or \
               (self.CS.prev_lkas_enabled == 1 and not self.CS.lkas_enabled):
               self.CS.madsEnabled = not self.CS.madsEnabled
-        self.CS.madsEnabled = self.get_acc_mads(ret.cruiseState.enabled, self.CS.accEnabled, self.CS.madsEnabled)
+        self.CS.madsEnabled = self.get_acc_mads(ret, self.CS.madsEnabled)
     else:
       self.CS.madsEnabled = False
 
     if self.get_sp_pedal_disengage(ret):
-      self.CS.madsEnabled, self.CS.accEnabled = self.get_sp_cancel_cruise_state(self.CS.madsEnabled)
+      self.get_sp_cancel_cruise_state()
       if not self.CP.pcmCruise:
         ret.cruiseState.enabled = self.CS.accEnabled
 
-    ret, self.CS = self.get_sp_common_state(ret, self.CS, gap_button=bool(distance_button))
+    ret = self.get_sp_common_state(ret)
 
-    # CANCEL
-    if self.CS.out.cruiseState.enabled and not ret.cruiseState.enabled:
-      be = car.CarState.ButtonEvent.new_message()
-      be.pressed = True
-      be.type = ButtonType.cancel
-      buttonEvents.append(be)
-
-    # MADS BUTTON
-    if self.CS.out.madsEnabled != self.CS.madsEnabled:
-      if self.mads_event_lock:
-        buttonEvents.append(create_mads_event(self.mads_event_lock))
-        self.mads_event_lock = False
-    else:
-      if not self.mads_event_lock:
-        buttonEvents.append(create_mads_event(self.mads_event_lock))
-        self.mads_event_lock = True
-
-    ret.buttonEvents = buttonEvents
+    ret.buttonEvents = [
+      *self.CS.button_events,
+      *self.button_events.create_cancel_event(ret.cruiseState.enabled, self.CS.out.cruiseState.enabled),
+      *self.button_events.create_mads_event(self.CS.madsEnabled, self.CS.out.madsEnabled)  # MADS BUTTON
+    ]
 
     # events
     events = self.create_common_events(ret, c, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.brake],
                                        pcm_enable=False)
 
-    events, ret = self.create_sp_events(self.CS, ret, events)
+    events, ret = self.create_sp_events(ret, events)
 
     # Lane Tracing Assist control is unavailable (EPS_STATUS->LTA_STATE=0) until
     # the more accurate angle sensor signal is initialized

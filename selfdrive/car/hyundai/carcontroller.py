@@ -1,11 +1,10 @@
 from cereal import car
 import cereal.messaging as messaging
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.numpy_fast import clip
+from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.params import Params
-from openpilot.common.realtime import DT_CTRL
 from opendbc.can.packer import CANPacker
-from openpilot.selfdrive.car import apply_driver_steer_torque_limits, common_fault_avoidance
+from openpilot.selfdrive.car import DT_CTRL, apply_driver_steer_torque_limits, common_fault_avoidance, make_tester_present_msg
 from openpilot.selfdrive.car.hyundai import hyundaicanfd, hyundaican
 from openpilot.selfdrive.car.hyundai.hyundaicanfd import CanBus
 from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, HyundaiFlagsSP, Buttons, CarControllerParams, CANFD_CAR, CAR, CAMERA_SCC_CAR, LEGACY_SAFETY_MODE_CAR
@@ -48,12 +47,11 @@ def process_hud_alert(enabled, fingerprint, hud_control):
 
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP, VM):
-    self.CP = CP
+    super().__init__(dbc_name, CP, VM)
     self.CAN = CanBus(CP)
     self.params = CarControllerParams(CP)
     self.packer = CANPacker(dbc_name)
     self.angle_limit_counter = 0
-    self.frame = 0
 
     self.accel_last = 0
     self.apply_steer_last = 0
@@ -72,9 +70,6 @@ class CarController(CarControllerBase):
       self.sm = messaging.SubMaster(sub_services)
 
     self.param_s = Params()
-    self.is_metric = self.param_s.get_bool("IsMetric")
-    self.speed_limit_control_enabled = False
-    self.last_speed_limit_sign_tap = False
     self.last_speed_limit_sign_tap_prev = False
     self.speed_limit = 0.
     self.speed_limit_offset = 0
@@ -101,9 +96,21 @@ class CarController(CarControllerBase):
     self.steady_speed = 0
     self.speeds = 0
     self.v_target_plan = 0
-    self.hkg_can_smooth_stop = self.param_s.get_bool("HkgSmoothStop")
     self.custom_stock_planner_speed = self.param_s.get_bool("CustomStockLongPlanner")
     self.lead_distance = 0
+
+    self.jerk = 0.0
+    self.jerk_l = 0.0
+    self.jerk_u = 0.0
+    self.jerkStartLimit = 2.0
+    self.cb_upper = 0.0
+    self.cb_lower = 0.0
+    self.jerk_count = 0.0
+
+    self.accel_raw = 0
+    self.accel_val = 0
+    self.accel_last_jerk = 0
+    self.hkg_custom_long_tuning = self.param_s.get_bool("HkgCustomLongTuning")
 
   def calculate_lead_distance(self, hud_control: car.CarControl.HUDControl) -> float:
     lead_one = self.sm["radarState"].leadOne
@@ -135,11 +142,8 @@ class CarController(CarControllerBase):
         self.m_tsc = self.sm['longitudinalPlanSP'].turnSpeed
 
       if self.frame % 200 == 0:
-        self.speed_limit_control_enabled = self.param_s.get_bool("EnableSlc")
-        self.is_metric = self.param_s.get_bool("IsMetric")
         self.custom_stock_planner_speed = self.param_s.get_bool("CustomStockLongPlanner")
-      self.last_speed_limit_sign_tap = self.param_s.get_bool("LastSpeedLimitSignTap")
-      self.v_cruise_min = HYUNDAI_V_CRUISE_MIN[self.is_metric] * (CV.KPH_TO_MPH if not self.is_metric else 1)
+      self.v_cruise_min = HYUNDAI_V_CRUISE_MIN[CS.params_list.is_metric] * (CV.KPH_TO_MPH if not CS.params_list.is_metric else 1)
       self.v_target_plan = min(CC.vCruise * CV.KPH_TO_MS, self.speeds)
 
     actuators = CC.actuators
@@ -188,14 +192,14 @@ class CarController(CarControllerBase):
     blinking_icon = (self.frame - self.disengage_blink) * DT_CTRL < 1.0 if self.lat_disengage_init else False
 
     if not self.CP.pcmCruiseSpeed:
-      if not self.last_speed_limit_sign_tap_prev and self.last_speed_limit_sign_tap:
+      if not self.last_speed_limit_sign_tap_prev and CS.params_list.last_speed_limit_sign_tap:
         self.sl_force_active_timer = self.frame
         self.param_s.put_bool_nonblocking("LastSpeedLimitSignTap", False)
-      self.last_speed_limit_sign_tap_prev = self.last_speed_limit_sign_tap
+      self.last_speed_limit_sign_tap_prev = CS.params_list.last_speed_limit_sign_tap
 
-      sl_force_active = self.speed_limit_control_enabled and (self.frame < (self.sl_force_active_timer * DT_CTRL + 2.0))
-      sl_inactive = not sl_force_active and (not self.speed_limit_control_enabled or (True if self.slc_state == 0 else False))
-      sl_temp_inactive = not sl_force_active and (self.speed_limit_control_enabled and (True if self.slc_state == 1 else False))
+      sl_force_active = CS.params_list.speed_limit_control_enabled and (self.frame < (self.sl_force_active_timer * DT_CTRL + 2.0))
+      sl_inactive = not sl_force_active and (not CS.params_list.speed_limit_control_enabled or (True if self.slc_state == 0 else False))
+      sl_temp_inactive = not sl_force_active and (CS.params_list.speed_limit_control_enabled and (True if self.slc_state == 1 else False))
       slc_active = not sl_inactive and not sl_temp_inactive
 
       self.slc_active_stock = slc_active
@@ -215,11 +219,14 @@ class CarController(CarControllerBase):
       addr, bus = 0x7d0, self.CAN.ECAN if self.CP.carFingerprint in CANFD_CAR else 0
       if self.CP.flags & HyundaiFlags.CANFD_HDA2.value:
         addr, bus = 0x730, self.CAN.ECAN
-      can_sends.append([addr, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", bus])
+      can_sends.append(make_tester_present_msg(addr, bus, suppress_response=True))
 
       # for blinkers
       if self.CP.flags & HyundaiFlags.ENABLE_BLINKERS:
-        can_sends.append([0x7b1, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", self.CAN.ECAN])
+        can_sends.append(make_tester_present_msg(0x7b1, self.CAN.ECAN, suppress_response=True))
+
+    if self.CP.openpilotLongitudinalControl:
+      self.make_jerk(CS, accel, actuators)
 
     # CAN-FD platforms
     if self.CP.carFingerprint in CANFD_CAR:
@@ -250,8 +257,8 @@ class CarController(CarControllerBase):
         else:
           can_sends.extend(hyundaicanfd.create_fca_warning_light(self.packer, self.CAN, self.frame))
         if self.frame % 2 == 0:
-          can_sends.append(hyundaicanfd.create_acc_control(self.packer, self.CAN, CC.enabled and CS.out.cruiseState.enabled, self.accel_last, accel, stopping, CC.cruiseControl.override,
-                                                           set_speed_in_units, hud_control))
+          can_sends.append(hyundaicanfd.create_acc_control(self.packer, self.CAN, CS, CC.enabled and CS.out.cruiseState.enabled, self.accel_last, accel, stopping, CC.cruiseControl.override,
+                                                           set_speed_in_units, hud_control, self.jerk_u, self.jerk_l))
           self.accel_last = accel
       else:
         # button presses
@@ -295,15 +302,13 @@ class CarController(CarControllerBase):
         self.lead_distance = self.calculate_lead_distance(hud_control)
 
       if self.frame % 2 == 0 and self.CP.openpilotLongitudinalControl:
-        if self.hkg_can_smooth_stop:
-          stopping = stopping and CS.out.vEgoRaw < 0.05
-
         # TODO: unclear if this is needed
         jerk = 3.0 if actuators.longControlState == LongCtrlState.pid else 1.0
         use_fca = self.CP.flags & HyundaiFlags.USE_FCA.value
-        can_sends.extend(hyundaican.create_acc_commands(self.packer, CC.enabled and CS.out.cruiseState.enabled, accel, jerk, int(self.frame / 2),
+        self.make_accel(CS, actuators)
+        can_sends.extend(hyundaican.create_acc_commands(self.packer, CC.enabled and CS.out.cruiseState.enabled, self.accel_raw, self.accel_val, self.jerk_l, self.jerk_u, int(self.frame / 2),
                                                         hud_control, set_speed_in_units, stopping,
-                                                        CC.cruiseControl.override, use_fca, CS, escc, self.CP, self.lead_distance))
+                                                        CC.cruiseControl.override, use_fca, CS, escc, self.CP, self.lead_distance, self.cb_lower, self.cb_upper))
 
       # 20 Hz LFA MFA message
       if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
@@ -448,8 +453,8 @@ class CarController(CarControllerBase):
     return min(target_speed_kph, curve_speed)
 
   def get_button_control(self, CS, final_speed, v_cruise_kph_prev):
-    self.init_speed = round(min(final_speed, v_cruise_kph_prev) * (CV.KPH_TO_MPH if not self.is_metric else 1))
-    self.v_set_dis = round(CS.out.cruiseState.speed * (CV.MS_TO_MPH if not self.is_metric else CV.MS_TO_KPH))
+    self.init_speed = round(min(final_speed, v_cruise_kph_prev) * (CV.KPH_TO_MPH if not CS.params_list.is_metric else 1))
+    self.v_set_dis = round(CS.out.cruiseState.speed * (CV.MS_TO_MPH if not CS.params_list.is_metric else CV.MS_TO_KPH))
     cruise_button = self.get_button_type(self.button_type)
     return cruise_button
 
@@ -479,3 +484,66 @@ class CarController(CarControllerBase):
 
       cruise_button = self.get_button_control(CS, self.final_speed_kph, v_cruise_kph_prev)  # MPH/KPH based button presses
     return cruise_button
+
+  # jerk calculations thanks to apilot!
+  def cal_jerk(self, accel, actuators):
+    self.accel_raw = accel
+    if actuators.longControlState == LongCtrlState.off:
+      accel_diff = 0.0
+    elif actuators.longControlState == LongCtrlState.stopping:# or hud_control.softHold > 0:
+      accel_diff = 0.0
+    else:
+      accel_diff = self.accel_raw - self.accel_last_jerk
+
+    accel_diff /= DT_CTRL
+    self.jerk = self.jerk * 0.9 + accel_diff * 0.1
+    return self.jerk
+
+  def make_jerk(self, CS, accel, actuators):
+    jerk = self.cal_jerk(accel, actuators)
+    a_error = accel - CS.out.aEgo
+    jerk = jerk + (a_error * 2.0)
+
+    if not self.hkg_custom_long_tuning:
+      self.jerk_u = 3.0 if actuators.longControlState == LongCtrlState.pid else 1.0
+      self.jerk_l = 5.0
+    elif True: #self.CP.carFingerprint in CANFD_CAR or self.CP.carFingerprint == CAR.HYUNDAI_KONA_EV_2022:
+      startingJerk = 0.5
+      jerkLimit = 5.0
+      self.jerk_count += DT_CTRL
+      jerk_max = interp(self.jerk_count, [0, 1.5, 2.5], [startingJerk, startingJerk, jerkLimit])
+      if actuators.longControlState == LongCtrlState.off:
+        self.jerk_u = jerkLimit
+        self.jerk_l = jerkLimit
+        self.jerk_count = 0
+      else:
+        self.jerk_u = min(max(0.5, jerk * 2.0), jerk_max)
+        self.jerk_l = min(max(1.0, -jerk * 3.0), jerkLimit)
+    else:
+      startingJerk = self.jerkStartLimit
+      jerkLimit = 5.0
+      self.jerk_count += DT_CTRL
+      jerk_max = interp(self.jerk_count, [0, 1.5, 2.5], [startingJerk, startingJerk, jerkLimit])
+      self.cb_upper = self.cb_lower = 0
+      if actuators.longControlState == LongCtrlState.off:
+        self.jerk_u = jerkLimit
+        self.jerk_l = jerkLimit
+        self.jerk_count = 0
+      else:
+        self.jerk_u = min(max(0.5, jerk * 2.0), jerk_max)
+        self.jerk_l = min(max(0.5, -jerk * 2.0), jerkLimit)
+        self.cb_upper = clip(0.9 + accel * 0.2, 0, 1.2)
+        self.cb_lower = clip(0.8 + accel * 0.2, 0, 1.2)
+
+  def make_accel(self, CS, actuators):
+    long_control = actuators.longControlState
+    is_ice = not self.CP.flags & (HyundaiFlags.HYBRID | HyundaiFlags.EV)
+    rate_up = 0.1
+    rate_down = 0.1
+    if long_control == LongCtrlState.off or (long_control == LongCtrlState.stopping and CS.out.standstill):
+      self.accel_raw, self.accel_val = 0, 0
+    else:
+      #self.accel_val = clip(self.accel_raw, self.accel_last - rate_down, self.accel_last + rate_up)
+      self.accel_val = self.accel_raw
+    self.accel_last = self.accel_val
+    self.accel_last_jerk = self.accel_val

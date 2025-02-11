@@ -86,6 +86,17 @@
         <source>for &quot;%1&quot;</source>
         <translation>給 &quot;%1&quot;</translation>
     </message>
+</context>
+<context>
+    <name>AdvancedNetworkingSP</name>
+    <message>
+        <source>Back</source>
+        <translation type="unfinished">回上頁</translation>
+    </message>
+    <message>
+        <source>Enable Tethering</source>
+        <translation type="unfinished">啟用網路分享</translation>
+    </message>
     <message>
         <source>Retain hotspot/tethering state</source>
         <translation type="unfinished"></translation>
@@ -93,6 +104,66 @@
     <message>
         <source>Enabling this toggle will retain the hotspot/tethering toggle state across reboots.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tethering Password</source>
+        <translation type="unfinished">網路分享密碼</translation>
+    </message>
+    <message>
+        <source>EDIT</source>
+        <translation type="unfinished">編輯</translation>
+    </message>
+    <message>
+        <source>Enter new tethering password</source>
+        <translation type="unfinished">輸入新的網路分享密碼</translation>
+    </message>
+    <message>
+        <source>IP Address</source>
+        <translation type="unfinished">IP 地址</translation>
+    </message>
+    <message>
+        <source>Enable Roaming</source>
+        <translation type="unfinished">啟用漫遊</translation>
+    </message>
+    <message>
+        <source>APN Setting</source>
+        <translation type="unfinished">APN 設置</translation>
+    </message>
+    <message>
+        <source>Enter APN</source>
+        <translation type="unfinished">輸入 APN</translation>
+    </message>
+    <message>
+        <source>leave blank for automatic configuration</source>
+        <translation type="unfinished">留空白將自動配置</translation>
+    </message>
+    <message>
+        <source>Cellular Metered</source>
+        <translation type="unfinished">行動網路</translation>
+    </message>
+    <message>
+        <source>Prevent large data uploads when on a metered connection</source>
+        <translation type="unfinished">防止使用行動網路上傳大量的數據</translation>
+    </message>
+    <message>
+        <source>Hidden Network</source>
+        <translation type="unfinished">隱藏的網路</translation>
+    </message>
+    <message>
+        <source>CONNECT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter SSID</source>
+        <translation type="unfinished">輸入 SSID</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <translation type="unfinished">輸入密碼</translation>
+    </message>
+    <message>
+        <source>for &quot;%1&quot;</source>
+        <translation type="unfinished">給 &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Ngrok Service</source>
@@ -115,11 +186,42 @@
     </message>
     <message>
         <source>SPEED</source>
-        <translation>速度</translation>
+        <translation type="vanished">速度</translation>
     </message>
     <message>
         <source>LIMIT</source>
-        <translation>速限</translation>
+        <translation type="vanished">速限</translation>
+    </message>
+</context>
+<context>
+    <name>AnnotatedCameraWidgetSP</name>
+    <message>
+        <source>km/h</source>
+        <translation type="unfinished">km/h</translation>
+    </message>
+    <message>
+        <source>mph</source>
+        <translation type="unfinished">mph</translation>
+    </message>
+    <message>
+        <source>MAX</source>
+        <translation type="unfinished">最高</translation>
+    </message>
+    <message>
+        <source>SPEED</source>
+        <translation type="unfinished">速度</translation>
+    </message>
+    <message>
+        <source>LIMIT</source>
+        <translation type="unfinished">速限</translation>
+    </message>
+    <message>
+        <source>blended</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>acc</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -319,7 +421,7 @@ Please use caution when using this feature. Only use the blinker when traffic an
     </message>
     <message>
         <source>Review the rules, features, and limitations of openpilot</source>
-        <translation type="vanished">觀看 openpilot 的使用規則、功能和限制</translation>
+        <translation>觀看 openpilot 的使用規則、功能和限制</translation>
     </message>
     <message>
         <source>Are you sure you want to review the training guide?</source>
@@ -414,6 +516,13 @@ Please use caution when using this feature. Only use the blinker when traffic an
         <translation>配對</translation>
     </message>
     <message>
+        <source>sunnypilot requires the device to be mounted within 4° left or right and within 5° up or 9° down. sunnypilot is continuously calibrating, resetting is rarely required.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DevicePanelSP</name>
+    <message>
         <source>TOGGLE</source>
         <translation type="unfinished"></translation>
     </message>
@@ -434,12 +543,20 @@ Please use caution when using this feature. Only use the blinker when traffic an
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>VIEW</source>
+        <translation type="unfinished">觀看</translation>
+    </message>
+    <message>
         <source>Display error from the tmux session when an error has occurred from a system process.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Reset Access Tokens for Map Services</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RESET</source>
+        <translation type="unfinished">重設</translation>
     </message>
     <message>
         <source>Reset self-service access tokens for Mapbox, Amap, and Google Maps.</source>
@@ -450,6 +567,10 @@ Please use caution when using this feature. Only use the blinker when traffic an
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Reset</source>
+        <translation type="unfinished">重設</translation>
+    </message>
+    <message>
         <source>Reset sunnypilot Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -458,19 +579,11 @@ Please use caution when using this feature. Only use the blinker when traffic an
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Review the rules, features, and limitations of sunnypilot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Toggle Onroad/Offroad</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>OFF</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>sunnypilot requires the device to be mounted within 4° left or right and within 5° up or 9° down. sunnypilot is continuously calibrating, resetting is rarely required.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -522,14 +635,6 @@ Please use caution when using this feature. Only use the blinker when traffic an
     </message>
     <message>
         <source>Disabled: Wake the brightness of the screen to display critical events.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable Screen Recorder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable this will display a button on the onroad screen to toggle on or off real-time screen recording with UI elements.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -713,6 +818,21 @@ Pause Steering: ALC will be paused after the brake pedal is manually pressed.</s
     </message>
 </context>
 <context>
+    <name>MapWindowSP</name>
+    <message>
+        <source>Map Loading</source>
+        <translation type="unfinished">地圖載入中</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation type="unfinished">等待 GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation type="unfinished">等待路線</translation>
+    </message>
+</context>
+<context>
     <name>MaxTimeOffroad</name>
     <message>
         <source>Max Time Offroad</source>
@@ -783,6 +903,9 @@ Pause Steering: ALC will be paused after the brake pedal is manually pressed.</s
         <source>Wrong password</source>
         <translation>密碼錯誤</translation>
     </message>
+</context>
+<context>
+    <name>NetworkingSP</name>
     <message>
         <source>Scan</source>
         <translation type="unfinished"></translation>
@@ -790,6 +913,22 @@ Pause Steering: ALC will be paused after the brake pedal is manually pressed.</s
     <message>
         <source>Scanning...</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">進階</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <translation type="unfinished">輸入密碼</translation>
+    </message>
+    <message>
+        <source>for &quot;%1&quot;</source>
+        <translation type="unfinished">給 &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Wrong password</source>
+        <translation type="unfinished">密碼錯誤</translation>
     </message>
 </context>
 <context>
@@ -1104,6 +1243,17 @@ Warning: You are on a metered connection!</source>
     </message>
 </context>
 <context>
+    <name>ParamControlSP</name>
+    <message>
+        <source>Enable</source>
+        <translation type="unfinished">啟用</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+</context>
+<context>
     <name>PathOffset</name>
     <message>
         <source>Path Offset</source>
@@ -1232,15 +1382,27 @@ Warning: You are on a metered connection!</source>
         <translation>現在</translation>
     </message>
     <message>
+        <source>sunnypilot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update downloaded. Ready to reboot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update: Check and Download Update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reboot: Reboot Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Updating...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>sunnypilot</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1292,14 +1454,6 @@ This may take up to a minute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>HKG CAN: Smoother Stopping Performance (Beta)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Smoother stopping behind a stopped car or desired stopping event. This is only applicable to HKG CAN platforms using openpilot longitudinal control.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Subaru</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1344,11 +1498,33 @@ This may take up to a minute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Enable Enhanced Blind Spot Monitor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Enable Toyota Stop and Go Hack</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>sunnypilot will allow some Toyota/Lexus cars to auto resume during stop and go traffic. This feature is only applicable to certain models. Use at your own risk.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Toyota Door Auto Locking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sunnypilot will attempt to lock the doors when drive above 10 km/h (6.2 mph).
+Reboot Required.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Toyota Door Auto Unlocking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sunnypilot will attempt to unlock the doors when shift to gear P.
+Reboot Required.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1361,6 +1537,55 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>sunnypilot supports Volkswagen MQB CC only platforms with this toggle enabled. Only enable this toggle if your car does not have ACC from the factory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start the car to check car compatibility</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This platform is already supported, therefore no need to enable this toggle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This platform is not supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This platform can be supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sunnypilot will use debugging CAN messages to receive unfiltered BSM signals, allowing detection of more objects.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tested on RAV4 TSS1, Lexus LSS1, Toyota TSS1/1.5, and Prius TSS2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HKG: Custom Tuning for New Longitudinal API</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HKG CAN: Enable Cruise Main by Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WARNING: This feature only applies when &quot;openpilot Longitudinal Control (Alpha)&quot; is enabled under &quot;Toggles&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enabling this toggle sets CRUISE MAIN to ON by default when the car starts, without engaging MADS. The user still needs to manually engage MADS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Toyota Drive Mode Button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sunnypilot will link the Acceleration Personality to the car&apos;s physical drive mode selector.
+Reboot Required.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1386,9 +1611,32 @@ This may take up to a minute.</source>
         <source>Software</source>
         <translation>軟體</translation>
     </message>
+</context>
+<context>
+    <name>SettingsWindowSP</name>
+    <message>
+        <source>×</source>
+        <translation type="unfinished">×</translation>
+    </message>
+    <message>
+        <source>Device</source>
+        <translation type="unfinished">裝置</translation>
+    </message>
+    <message>
+        <source>Network</source>
+        <translation type="unfinished">網路</translation>
+    </message>
     <message>
         <source>sunnylink</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggles</source>
+        <translation type="unfinished">設定</translation>
+    </message>
+    <message>
+        <source>Software</source>
+        <translation type="unfinished">軟體</translation>
     </message>
     <message>
         <source>sunnypilot</source>
@@ -1611,12 +1859,47 @@ This may take up to a minute.</source>
         <source>5G</source>
         <translation>5G</translation>
     </message>
+</context>
+<context>
+    <name>SidebarSP</name>
     <message>
-        <source>SUNNYLINK</source>
-        <translation type="unfinished"></translation>
+        <source>TEMP</source>
+        <translation type="unfinished">溫度</translation>
+    </message>
+    <message>
+        <source>HIGH</source>
+        <translation type="unfinished">偏高</translation>
+    </message>
+    <message>
+        <source>GOOD</source>
+        <translation type="unfinished">正常</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished">一般</translation>
     </message>
     <message>
         <source>DISABLED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OFFLINE</source>
+        <translation type="unfinished">已離線</translation>
+    </message>
+    <message>
+        <source>REGIST...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ONLINE</source>
+        <translation type="unfinished">已連線</translation>
+    </message>
+    <message>
+        <source>ERROR</source>
+        <translation type="unfinished">錯誤</translation>
+    </message>
+    <message>
+        <source>SUNNYLINK</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1744,10 +2027,6 @@ This may take up to a minute.</source>
     <message>
         <source>never</source>
         <translation>從未更新</translation>
-    </message>
-    <message>
-        <source>Driving Model</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2047,30 +2326,6 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>👋Not going to lie, it&apos;s sad to see you disabled sunnylink 😢, but we&apos;ll be here when you&apos;re ready to come back 🎉.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>A reboot is required to</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>stop</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>all connections and processes from sunnylink.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>If that&apos;s not a problem for you, you can ignore this.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reboot Now!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2424,7 +2679,7 @@ This may take up to a minute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Formerly known as &lt;b&gt;&quot;NNFF&quot;&lt;/b&gt;, this replaces the lateral &lt;b&gt;&quot;torque&quot;&lt;/b&gt; controller with one using a neural network trained on each car&apos;s (actually, each separate EPS firmware) driving data for increased controls accuracy.</source>
+        <source>Formerly known as &lt;b&gt;&quot;NNFF&quot;&lt;/b&gt;, this replaces the lateral &lt;b&gt;&quot;torque&quot;&lt;/b&gt; controller, with one using a neural network trained on each car&apos;s (actually, each separate EPS firmware) driving data for increased controls accuracy.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2437,6 +2692,30 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Default is Laneless. In Auto mode, sunnnypilot dynamically chooses between Laneline or Laneless model based on lane recognition confidence level on road and certain conditions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overtaking Acceleration Assist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overtaking Acceleration Assist will operate when the turn signal indicator is turned on to the left (left-hand drive) or turned on to the right (right-hand drive) while openpilot Longitudinal Control is operating.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NNLC: Remove Lateral Jerk Response (Alpha)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When NNLC is active, enable this to disables the use of lateral jerk in steering torque calculations, focusing solely on lateral acceleration for a simplified control response.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lateral Jerk with Torque Lateral Control (Alpha)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Utilizes limited lateral jerk control for improved steering response, leveraging stock torque lateral controller capabilities. Designed to mimic NNLC behavior without training models or data collection.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2457,6 +2736,21 @@ This may take up to a minute.</source>
     <message>
         <source>Agree</source>
         <translation>接受</translation>
+    </message>
+</context>
+<context>
+    <name>TermsPageSP</name>
+    <message>
+        <source>Terms &amp; Conditions</source>
+        <translation type="unfinished">條款和條件</translation>
+    </message>
+    <message>
+        <source>Decline</source>
+        <translation type="unfinished">拒絕</translation>
+    </message>
+    <message>
+        <source>Scroll to accept</source>
+        <translation type="unfinished">滑動至頁尾接受條款</translation>
     </message>
 </context>
 <context>
@@ -2503,19 +2797,19 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Show ETA in 24h Format</source>
-        <translation>預計到達時間單位改用 24 小時制</translation>
+        <translation type="vanished">預計到達時間單位改用 24 小時制</translation>
     </message>
     <message>
         <source>Use 24h format instead of am/pm</source>
-        <translation>使用 24 小時制。(預設值為 12 小時制)</translation>
+        <translation type="vanished">使用 24 小時制。(預設值為 12 小時制)</translation>
     </message>
     <message>
         <source>Show Map on Left Side of UI</source>
-        <translation>將地圖顯示在畫面的左側</translation>
+        <translation type="vanished">將地圖顯示在畫面的左側</translation>
     </message>
     <message>
         <source>Show map on left side when in split screen view.</source>
-        <translation>進入分割畫面後，地圖將會顯示在畫面的左側。</translation>
+        <translation type="vanished">進入分割畫面後，地圖將會顯示在畫面的左側。</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -2559,7 +2853,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Standard</source>
-        <translation type="vanished">標準</translation>
+        <translation>標準</translation>
     </message>
     <message>
         <source>Relaxed</source>
@@ -2583,7 +2877,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Standard is recommended. In aggressive mode, openpilot will follow lead cars closer and be more aggressive with the gas and brake. In relaxed mode openpilot will stay further away from lead cars. On supported cars, you can cycle through these personalities with your steering wheel distance button.</source>
-        <translation type="vanished">建議使用標準模式。在積極模式下，openpilot 會更接近前車並更積極地使用油門和剎車。在輕鬆模式下，openpilot 會與前車保持較遠距離。對於支援的汽車，您可以使用方向盤上的距離按鈕來切換這些駕駛風格。</translation>
+        <translation>建議使用標準模式。在積極模式下，openpilot 會更接近前車並更積極地使用油門和剎車。在輕鬆模式下，openpilot 會與前車保持較遠距離。對於支援的汽車，您可以使用方向盤上的距離按鈕來切換這些駕駛風格。</translation>
     </message>
     <message>
         <source>The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner.</source>
@@ -2605,6 +2899,29 @@ This may take up to a minute.</source>
         <source>Use the sunnypilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>TogglesPanelSP</name>
+    <message>
+        <source>Enable sunnypilot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use the sunnypilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>openpilot Longitudinal Control (Alpha)</source>
+        <translation type="unfinished">openpilot 縱向控制 (Alpha 版)</translation>
+    </message>
+    <message>
+        <source>WARNING: sunnypilot longitudinal control is in alpha for this car and will disable Automatic Emergency Braking (AEB).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On this car, sunnypilot defaults to the car&apos;s built-in ACC instead of openpilot&apos;s longitudinal control. Enable this to switch to sunnypilot longitudinal control. Enabling Experimental mode is recommended when enabling sunnypilot longitudinal control alpha.</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <source>Custom Stock Longitudinal Control</source>
         <translation type="unfinished"></translation>
@@ -2615,16 +2932,56 @@ This feature must be used along with SLC, and/or V-TSC, and/or M-TSC.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use Planner Speed</source>
-        <translation type="unfinished"></translation>
+        <source>Experimental Mode</source>
+        <translation type="unfinished">實驗模式</translation>
     </message>
     <message>
         <source>Enable Dynamic Experimental Control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enable toggle to allow the model to determine when to use openpilot ACC or openpilot End to End Longitudinal.</source>
+        <source>Enable toggle to allow the model to determine when to use sunnypilot ACC or sunnypilot End to End Longitudinal.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Dynamic Personality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable this to allow sunnypilot to dynamically adjust following distance and reaction based on your &quot;Driving Personality&quot; setting. Instead of predefined settings for each personality, every personality now adapts dynamically according to your speed and the distance to the lead car.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disengage on Accelerator Pedal</source>
+        <translation type="unfinished">油門取消控車</translation>
+    </message>
+    <message>
+        <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
+        <translation type="unfinished">啟用後，踩踏油門將會取消 openpilot 控制。</translation>
+    </message>
+    <message>
+        <source>Enable Lane Departure Warnings</source>
+        <translation type="unfinished">啟用車道偏離警告</translation>
+    </message>
+    <message>
+        <source>Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h).</source>
+        <translation type="unfinished">車速在時速 50 公里 (31 英里) 以上且未打方向燈的情況下，如果偵測到車輛駛出目前車道線時，發出車道偏離警告。</translation>
+    </message>
+    <message>
+        <source>Always-On Driver Monitoring</source>
+        <translation type="unfinished">駕駛監控常開</translation>
+    </message>
+    <message>
+        <source>Enable driver monitoring even when sunnypilot is not engaged.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Record and Upload Driver Camera</source>
+        <translation type="unfinished">記錄並上傳駕駛監控影像</translation>
+    </message>
+    <message>
+        <source>Upload data from the driver facing camera and help improve the driver monitoring algorithm.</source>
+        <translation type="unfinished">上傳駕駛監控的錄影來協助我們提升駕駛監控的準確率。</translation>
     </message>
     <message>
         <source>Disable Onroad Uploads</source>
@@ -2635,7 +2992,63 @@ This feature must be used along with SLC, and/or V-TSC, and/or M-TSC.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Maniac</source>
+        <source>Use Metric System</source>
+        <translation type="unfinished">使用公制單位</translation>
+    </message>
+    <message>
+        <source>Display speed in km/h instead of mph.</source>
+        <translation type="unfinished">啟用後，速度單位顯示將從 mp/h 改為 km/h。</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation type="unfinished">預計到達時間單位改用 24 小時制</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation type="unfinished">使用 24 小時制。(預設值為 12 小時制)</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation type="unfinished">將地圖顯示在畫面的左側</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation type="unfinished">進入分割畫面後，地圖將會顯示在畫面的左側。</translation>
+    </message>
+    <message>
+        <source>Aggressive</source>
+        <translation type="unfinished">積極</translation>
+    </message>
+    <message>
+        <source>Moderate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Standard</source>
+        <translation type="unfinished">標準</translation>
+    </message>
+    <message>
+        <source>Relaxed</source>
+        <translation type="unfinished">舒適</translation>
+    </message>
+    <message>
+        <source>Driving Personality</source>
+        <translation type="unfinished">駕駛風格</translation>
+    </message>
+    <message>
+        <source>Standard is recommended. In moderate/aggressive mode, sunnypilot will follow lead cars closer and be more aggressive with the gas and brake. In relaxed mode sunnypilot will stay further away from lead cars. On supported cars, you can cycle through these personalities with your steering wheel distance button.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eco</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2643,7 +3056,51 @@ This feature must be used along with SLC, and/or V-TSC, and/or M-TSC.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Stock is recommended. In aggressive/maniac mode, openpilot will follow lead cars closer and be more aggressive with the gas and brake. In relaxed mode openpilot will stay further away from lead cars. On supported cars, you can cycle through these personalities with your steering wheel distance button.</source>
+        <source>Acceleration Personality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normal is recommended. In sport mode, sunnypilot will provide aggressive acceleration for a dynamic driving experience. In eco mode, sunnypilot will apply smoother and more relaxed acceleration. On supported cars, you can cycle through these acceleration personality within Onroad Settings on the driving screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>openpilot defaults to driving in &lt;b&gt;chill mode&lt;/b&gt;. Experimental mode enables &lt;b&gt;alpha-level features&lt;/b&gt; that aren&apos;t ready for chill mode. Experimental features are listed below:</source>
+        <translation type="unfinished">openpilot 預設以 &lt;b&gt;輕鬆模式&lt;/b&gt; 駕駛。    實驗模式啟用了尚未準備好進入輕鬆模式的 &lt;b&gt;alpha 級功能&lt;/b&gt;。實驗功能如下：</translation>
+    </message>
+    <message>
+        <source>End-to-End Longitudinal Control</source>
+        <translation type="unfinished">端到端縱向控制</translation>
+    </message>
+    <message>
+        <source>Let the driving model control the gas and brakes. sunnypilot will drive as it thinks a human would, including stopping for red lights and stop signs. Since the driving model decides the speed to drive, the set speed will only act as an upper bound. This is an alpha quality feature; mistakes should be expected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Driving Visualization</source>
+        <translation type="unfinished">新的駕駛視覺介面</translation>
+    </message>
+    <message>
+        <source>The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner.</source>
+        <translation type="unfinished">在低速時，駕駛可視化將切換至道路朝向的廣角攝影機，以更好地顯示某些彎道。在右上角還會顯示「實驗模式」的標誌。</translation>
+    </message>
+    <message>
+        <source>Experimental mode is currently unavailable on this car since the car&apos;s stock ACC is used for longitudinal control.</source>
+        <translation type="unfinished">因車輛使用內建ACC系統，無法在本車輛上啟動實驗模式。</translation>
+    </message>
+    <message>
+        <source>openpilot longitudinal control may come in a future update.</source>
+        <translation type="unfinished">openpilot 縱向控制可能會在未來的更新中提供。</translation>
+    </message>
+    <message>
+        <source>An alpha version of sunnypilot longitudinal control can be tested, along with Experimental mode, on non-release branches.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable the sunnypilot longitudinal control (alpha) toggle to allow Experimental mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Planner Speed</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2846,11 +3303,6 @@ This feature must be used along with SLC, and/or V-TSC, and/or M-TSC.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Distance
-Speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Display Metrics Below Chevron</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2876,6 +3328,14 @@ Speed</source>
     </message>
     <message>
         <source>Display Temperature on Sidebar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2923,6 +3383,29 @@ Speed</source>
     <message>
         <source>Forget</source>
         <translation>清除</translation>
+    </message>
+</context>
+<context>
+    <name>WifiUISP</name>
+    <message>
+        <source>Scanning for networks...</source>
+        <translation type="unfinished">掃描無線網路中...</translation>
+    </message>
+    <message>
+        <source>CONNECTING...</source>
+        <translation type="unfinished">連線中...</translation>
+    </message>
+    <message>
+        <source>FORGET</source>
+        <translation type="unfinished">清除</translation>
+    </message>
+    <message>
+        <source>Forget Wi-Fi Network &quot;%1&quot;?</source>
+        <translation type="unfinished">清除 Wi-Fi 網路 &quot;%1&quot;?</translation>
+    </message>
+    <message>
+        <source>Forget</source>
+        <translation type="unfinished">清除</translation>
     </message>
 </context>
 </TS>

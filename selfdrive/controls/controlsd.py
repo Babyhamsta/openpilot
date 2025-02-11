@@ -20,7 +20,7 @@ from openpilot.common.swaglog import cloudlog
 
 from openpilot.selfdrive.car.car_helpers import get_car_interface, get_startup_event
 from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
-from openpilot.selfdrive.controls.lib.drive_helpers import VCruiseHelper, clip_curvature, get_lag_adjusted_curvature
+from openpilot.selfdrive.controls.lib.drive_helpers import VCruiseHelper, clip_curvature, get_lag_adjusted_curvature, CRUISE_LONG_PRESS
 from openpilot.selfdrive.controls.lib.events import Events, ET
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl, MIN_LATERAL_CONTROL_SPEED
 from openpilot.selfdrive.controls.lib.latcontrol_pid import LatControlPID
@@ -28,8 +28,7 @@ from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle, S
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
-from openpilot.selfdrive.modeld.model_capabilities import ModelCapabilities
-from openpilot.selfdrive.sunnypilot import get_model_generation
+from openpilot.selfdrive.modeld.custom_model_metadata import CustomModelMetadata, ModelCapabilities
 
 from openpilot.system.athena.registration import is_registered_device
 from openpilot.system.hardware import HARDWARE
@@ -70,9 +69,7 @@ class Controls:
 
     if CI is None:
       cloudlog.info("controlsd is waiting for CarParams")
-      with car.CarParams.from_bytes(self.params.get("CarParams", block=True)) as msg:
-        # TODO: this shouldn't need to be a builder
-        self.CP = msg.as_builder()
+      self.CP = messaging.log_from_bytes(self.params.get("CarParams", block=True), car.CarParams)
       cloudlog.info("controlsd got CarParams")
 
       # Uses car interface helper functions, altering state won't be considered by card for actuation
@@ -182,11 +179,24 @@ class Controls:
     self.enable_mads = self.params.get_bool("EnableMads")
     self.mads_disengage_lateral_on_brake = self.params.get_bool("DisengageLateralOnBrake")
     self.mads_ndlob = self.enable_mads and not self.mads_disengage_lateral_on_brake
+    self.pcm_v_cruise_override = self.params.get_bool("PCMVCruiseOverride")
+    self.pcm_v_cruise_override_speed = int(self.params.get("PCMVCruiseOverrideSpeed", encoding="utf-8"))
     self.process_not_running = False
+    self.experimental_mode_update = False
 
-    self.custom_model, self.model_gen = get_model_generation(self.params)
-    model_capabilities = ModelCapabilities.get_by_gen(self.model_gen)
-    self.model_use_lateral_planner = self.custom_model and model_capabilities & ModelCapabilities.LateralPlannerSolution
+    self.custom_model_metadata = CustomModelMetadata(params=self.params, init_only=True)
+    self.model_use_lateral_planner = self.custom_model_metadata.valid and \
+                                     self.custom_model_metadata.capabilities & ModelCapabilities.LateralPlannerSolution
+
+    self.dynamic_personality = self.params.get_bool("DynamicPersonality")
+    self.overtaking_accel = self.params.get_bool("OvertakingAccelerationAssist")
+    self.overtaking_accel_engaged = False
+    self.prev_overtaking_accel_engaged = False
+    self.overtaking_accel_allowed = False
+    self.prev_overtaking_accel_allowed = False
+    self.overtaking_accel_blocked = False
+
+    self.accel_personality = self.read_accel_personality_param()
 
     self.can_log_mono_time = 0
 
@@ -489,7 +499,9 @@ class Controls:
   def state_transition(self, CS):
     """Compute conditional state transitions and execute actions on state transitions"""
 
-    self.v_cruise_helper.update_v_cruise(CS, self.enabled_long, self.is_metric, self.reverse_acc_change, self.sm['longitudinalPlanSP'])
+    # sp - PCM speed override
+    sp_override_speed = self.pcm_v_cruise_override_speed if self.pcm_v_cruise_override else False
+    self.v_cruise_helper.update_v_cruise(CS, self.enabled_long, self.is_metric, self.reverse_acc_change, sp_override_speed, self.sm['longitudinalPlanSP'])
 
     # decrement the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
@@ -635,13 +647,18 @@ class Controls:
     if not CC.latActive:
       self.LaC.reset()
     if not CC.longActive:
-      self.LoC.reset(v_pid=CS.vEgo)
+      self.LoC.reset()
 
     if not self.joystick_mode:
+      speeds = long_plan.speeds
+      a_lead = self.sm['radarState'].leadOne.aLeadK
+      resume = False
+      if len(speeds):
+        resume = self.enabled_long and CS.standstill and self.CP.carName == "hyundai" and speeds[-1] > 0.1 and a_lead > 0.1
+
       # accel PID loop
       pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, self.v_cruise_helper.v_cruise_kph * CV.KPH_TO_MS)
-      t_since_plan = (self.sm.frame - self.sm.recv_frame['longitudinalPlan']) * DT_CTRL
-      actuators.accel = self.LoC.update(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan)
+      actuators.accel = self.LoC.update(CC.longActive, CS, long_plan.aTarget, long_plan.shouldStop, pid_accel_limits, resume)
 
       # Steering PID loop and lateral MPC
       if self.model_use_lateral_planner:
@@ -718,11 +735,21 @@ class Controls:
         cloudlog.error(f"actuators.{p} not finite {actuators.to_dict()}")
         setattr(actuators, p, 0.0)
 
+    # toggle experimental mode once on distance button hold
+    if self.CP.openpilotLongitudinalControl:
+      if self.v_cruise_helper.button_timers[ButtonType.gapAdjustCruise] == CRUISE_LONG_PRESS and \
+            not self.experimental_mode_update:
+        self.experimental_mode = not self.experimental_mode
+        self.params.put_bool_nonblocking("ExperimentalMode", self.experimental_mode)
+        self.experimental_mode_update = True
+
     # decrement personality on distance button press
     if self.CP.openpilotLongitudinalControl:
       if any(not be.pressed and be.type == ButtonType.gapAdjustCruise for be in CS.buttonEvents):
-        self.personality = (self.personality - 1) % 3
-        self.params.put_nonblocking('LongitudinalPersonality', str(self.personality))
+        if not self.experimental_mode_update:
+          self.personality = (self.personality - 1) % 3
+          self.params.put_nonblocking('LongitudinalPersonality', str(self.personality))
+        self.experimental_mode_update = False
 
     return CC, lac_log
 
@@ -739,7 +766,9 @@ class Controls:
       CC.angularVelocity = angular_rate_value
 
     CC.cruiseControl.override = self.enabled_long and not CC.longActive and self.CP.openpilotLongitudinalControl
-    CC.cruiseControl.cancel = CS.cruiseState.enabled and (not self.enabled_long or (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)))
+    CC.cruiseControl.cancel = CS.cruiseState.enabled and \
+      (not self.enabled_long or (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or
+       (any(b.type == ButtonType.cancel for b in CS.buttonEvents) and self.CP.carName == "honda"))
     if self.joystick_mode and self.sm.recv_frame['testJoystick'] > 0 and self.sm['testJoystick'].buttons[0]:
       CC.cruiseControl.cancel = True
 
@@ -805,10 +834,35 @@ class Controls:
 
     # Curvature & Steering angle
     lp = self.sm['liveParameters']
-    lp_mono_time_svs = 'lateralPlanDEPRECATED' if self.model_use_lateral_planner else 'modelV2'
+    dh = 'lateralPlanDEPRECATED' if self.model_use_lateral_planner else 'modelV2'
 
     steer_angle_without_offset = math.radians(CS.steeringAngleDeg - lp.angleOffsetDeg)
     curvature = -self.VM.calc_curvature(steer_angle_without_offset, CS.vEgo, lp.roll)
+
+    lat_plan = self.sm['lateralPlanDEPRECATED']
+    long_plan = self.sm['longitudinalPlan']
+    dm_state = self.sm['driverMonitoringState']
+    blinker_svs = lat_plan if self.model_use_lateral_planner else model_v2.meta
+    self.prev_overtaking_accel_allowed = self.overtaking_accel_allowed
+    if not self.overtaking_accel_allowed and not self.prev_overtaking_accel_allowed:
+      self.overtaking_accel_blocked = False
+    self.overtaking_accel_allowed = ((blinker_svs.laneChangeDirection == LaneChangeDirection.right and dm_state.isRHD) or
+                                     (blinker_svs.laneChangeDirection == LaneChangeDirection.left and not dm_state.isRHD)) and \
+                                    (blinker_svs.laneChangeState in (LaneChangeState.preLaneChange, LaneChangeState.laneChangeStarting)) and \
+                                    not self.overtaking_accel_blocked
+    self.prev_overtaking_accel_engaged = self.overtaking_accel_engaged
+    ttc = self.sm['radarState'].leadOne.dRel / CS.vEgo if CS.vEgo > 0 else 255
+    overtaking_accel_engaged = self.overtaking_accel and self.overtaking_accel_allowed and \
+                               (CS.vEgo > ((60 * CV.KPH_TO_MS) if self.is_metric else (40 * CV.MPH_TO_MS))) and \
+                               not (CS.leftBlinker and CS.rightBlinker)
+    if ttc < 0.75 and self.prev_overtaking_accel_engaged and overtaking_accel_engaged:
+      overtaking_accel_engaged = False
+      self.overtaking_accel_blocked = True
+    if overtaking_accel_engaged and not self.prev_overtaking_accel_engaged and \
+      long_plan.hasLead and long_plan.aTarget > -0.1 and (0.75 < ttc < 3.0):
+      self.overtaking_accel_engaged = True
+    elif not overtaking_accel_engaged:
+      self.overtaking_accel_engaged = False
 
     # controlsState
     dat = messaging.new_message('controlsState')
@@ -824,7 +878,7 @@ class Controls:
       controlsState.alertSound = current_alert.audible_alert
 
     controlsState.longitudinalPlanMonoTime = self.sm.logMonoTime['longitudinalPlan']
-    controlsState.lateralPlanMonoTime = self.sm.logMonoTime[lp_mono_time_svs]
+    controlsState.lateralPlanMonoTime = self.sm.logMonoTime[dh]
     controlsState.enabled = not (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) and (self.enabled or CS.cruiseState.enabled) and CS.gearShifter not in [GearShifter.park, GearShifter.reverse]
     controlsState.active = not (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) and (self.active or CS.cruiseState.enabled)
     controlsState.curvature = curvature
@@ -832,7 +886,6 @@ class Controls:
     controlsState.state = self.state
     controlsState.engageable = not self.events.contains(ET.NO_ENTRY)
     controlsState.longControlState = self.LoC.long_control_state
-    controlsState.vPid = float(self.LoC.v_pid)
     controlsState.vCruise = float(self.v_cruise_helper.v_cruise_kph)
     controlsState.vCruiseCluster = float(self.v_cruise_helper.v_cruise_cluster_kph)
     controlsState.upAccelCmd = float(self.LoC.pid.p)
@@ -861,6 +914,9 @@ class Controls:
 
     controlsStateSP.lateralState = lat_tuning
     controlsStateSP.personality = self.personality
+    controlsStateSP.dynamicPersonality = self.dynamic_personality
+    controlsStateSP.accelPersonality = self.accel_personality
+    controlsStateSP.overtakingAccelerationAssist = self.overtaking_accel_engaged
 
     if self.enable_nnff and lat_tuning == 'torque':
       controlsStateSP.lateralControlState.torqueState = self.LaC.pid_long_sp
@@ -909,17 +965,26 @@ class Controls:
     except (ValueError, TypeError):
       return custom.LongitudinalPersonalitySP.standard
 
+  def read_accel_personality_param(self):
+    try:
+      return int(self.params.get("AccelPersonality"))
+    except (ValueError, TypeError):
+      return custom.AccelerationPersonality.stock
+
   def params_thread(self, evt):
     while not evt.is_set():
       self.is_metric = self.params.get_bool("IsMetric")
       self.experimental_mode = self.params.get_bool("ExperimentalMode") and (self.CP.openpilotLongitudinalControl or
                                                                              (not self.CP.pcmCruiseSpeed and self.custom_stock_planner_speed))
       self.personality = self.read_personality_param()
+      self.dynamic_personality = self.params.get_bool("DynamicPersonality")
+      self.accel_personality = self.read_accel_personality_param()
       if self.CP.notCar:
         self.joystick_mode = self.params.get_bool("JoystickDebugMode")
 
       self.reverse_acc_change = self.params.get_bool("ReverseAccChange")
       self.dynamic_experimental_control = self.params.get_bool("DynamicExperimentalControl")
+      self.overtaking_accel = self.params.get_bool("OvertakingAccelerationAssist")
 
       if self.sm.frame % int(2.5 / DT_CTRL) == 0:
         self.live_torque = self.params.get_bool("LiveTorque")
@@ -934,7 +999,7 @@ class Controls:
       while True:
         self.step()
         self.rk.monitor_time()
-    except SystemExit:
+    finally:
       e.set()
       t.join()
 

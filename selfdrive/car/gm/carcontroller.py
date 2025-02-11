@@ -3,9 +3,8 @@ import cereal.messaging as messaging
 from openpilot.common.params import Params
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import interp
-from openpilot.common.realtime import DT_CTRL
 from opendbc.can.packer import CANPacker
-from openpilot.selfdrive.car import apply_driver_steer_torque_limits
+from openpilot.selfdrive.car import DT_CTRL, apply_driver_steer_torque_limits
 from openpilot.selfdrive.car.gm import gmcan
 from openpilot.selfdrive.car.gm.values import DBC, CanBus, CarControllerParams, CruiseButtons
 from openpilot.selfdrive.car.interfaces import CarControllerBase
@@ -23,12 +22,11 @@ MIN_STEER_MSG_INTERVAL_MS = 15
 
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP, VM):
-    self.CP = CP
+    super().__init__(dbc_name, CP, VM)
     self.start_time = 0.
     self.apply_steer_last = 0
     self.apply_gas = 0
     self.apply_brake = 0
-    self.frame = 0
     self.last_steer_frame = 0
     self.last_button_frame = 0
     self.cancel_counter = 0
@@ -221,7 +219,7 @@ class CarController(CarControllerBase):
           if not (self.v_tsc_state != 0 or self.m_tsc_state > 1) and abs(self.target_speed - self.v_set_dis) <= 2:
             send_freq = 3
           if self.frame % 12 < 6:  # thanks to mochi86420 for the magic numbers
-            can_sends.append(gmcan.create_buttons(self.packer_pt, CanBus.CAMERA, (CS.button_counter + 2) % 4, self.cruise_button))
+            can_sends.extend([gmcan.create_buttons(self.packer_pt, CanBus.CAMERA, (CS.buttons_counter + 2) % 4, self.cruise_button)] * 3)
 
     if self.CP.networkLocation == NetworkLocation.fwdCamera:
       # Silence "Take Steering" alert sent by camera, forward PSCMStatus with HandsOffSWlDetectionStatus=1
@@ -239,7 +237,7 @@ class CarController(CarControllerBase):
 
   # multikyd methods, sunnyhaibin logic
   def get_cruise_buttons_status(self, CS):
-    if not CS.out.cruiseState.enabled or CS.cruise_buttons != CruiseButtons.UNPRESS or CS.cruise_buttons != CruiseButtons.INIT:
+    if not CS.out.cruiseState.enabled or CS.cruise_buttons != CruiseButtons.UNPRESS:
       self.timer = 40
     elif self.timer:
       self.timer -= 1
@@ -301,7 +299,7 @@ class CarController(CarControllerBase):
     return cruise_button
 
   def type_3(self):
-    cruise_button = None
+    cruise_button = CruiseButtons.UNPRESS
     self.button_count += 1
     if self.button_count > self.t_interval:
       self.button_type = 0

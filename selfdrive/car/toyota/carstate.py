@@ -1,18 +1,19 @@
 import copy
 
-from cereal import car
+from cereal import car, custom
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import mean
 from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.common.realtime import DT_CTRL
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
+from openpilot.selfdrive.car import DT_CTRL
+from openpilot.common.params import Params
 from openpilot.selfdrive.car.interfaces import CarStateBase
 from openpilot.selfdrive.car.toyota.values import ToyotaFlags, ToyotaFlagsSP, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, \
                                                   TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
 
 SteerControlType = car.CarParams.SteerControlType
-
+AccelPersonality = custom.AccelerationPersonality
 # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
 # - high steer rate fault: goes to 21 or 25 for 1 frame, then 9 for 2 seconds
 # - lka/lta msg drop out: goes to 9 then 11 for a combined total of 2 seconds, then 3.
@@ -68,6 +69,25 @@ class CarState(CarStateBase):
       self.zss_cruise_active_last = False
       self.zss_angle_offset = 0.
       self.zss_threshold_count = 0
+
+    self._left_blindspot = False
+    self._left_blindspot_d1 = 0
+    self._left_blindspot_d2 = 0
+    self._left_blindspot_counter = 0
+
+    self._right_blindspot = False
+    self._right_blindspot_d1 = 0
+    self._right_blindspot_d2 = 0
+    self._right_blindspot_counter = 0
+
+    self.signals_checked = False
+    self.sport_signal_seen = False
+    self.eco_signal_seen = False
+    self.accel_profile = None
+    self.prev_accel_profile = None
+    self.accel_profile_init = False
+    self.toyota_drive_mode = Params().get_bool('ToyotaDriveMode')
+    self.frame = 0
 
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
@@ -164,6 +184,51 @@ class CarState(CarStateBase):
     ret.leftBlinker = ret.leftBlinkerOn = cp.vl["BLINKERS_STATE"]["TURN_SIGNALS"] == 1
     ret.rightBlinker = ret.rightBlinkerOn = cp.vl["BLINKERS_STATE"]["TURN_SIGNALS"] == 2
 
+    if self.toyota_drive_mode:
+      # Determine sport signal based on car model
+      sport_signal = 'SPORT_ON_2' if self.CP.carFingerprint in (CAR.TOYOTA_RAV4_TSS2, CAR.LEXUS_ES_TSS2, CAR.TOYOTA_HIGHLANDER_TSS2) else 'SPORT_ON'
+
+      # Check signals once
+      if not self.signals_checked:
+        self.signals_checked = True
+
+        # Try to detect sport mode signal, handle missing signal with a fallback
+        try:
+          sport_mode = cp.vl["GEAR_PACKET"][sport_signal]
+          self.sport_signal_seen = True
+        except KeyError:
+          sport_mode = 0
+          self.sport_signal_seen = False
+
+        # Try to detect eco mode signal, handle missing signal with a fallback
+        try:
+          eco_mode = cp.vl["GEAR_PACKET"]['ECON_ON']
+          self.eco_signal_seen = True
+        except KeyError:
+          eco_mode = 0
+          self.eco_signal_seen = False
+      else:
+        # Always re-check the signals to account for mode changes
+        sport_mode = cp.vl["GEAR_PACKET"][sport_signal] if self.sport_signal_seen else 0
+        eco_mode = cp.vl["GEAR_PACKET"]['ECON_ON'] if self.eco_signal_seen else 0
+
+      # Set acceleration profile based on detected modes, with sport mode having higher priority
+      if sport_mode == 1:
+        self.accel_profile = AccelPersonality.sport
+      elif eco_mode == 1:
+        self.accel_profile = AccelPersonality.eco
+      else:
+        self.accel_profile = AccelPersonality.normal
+
+      print(f"Accel profile set to: {self.accel_profile}")
+
+      # If not initialized, sync profile with the current mode on the car
+      if not self.accel_profile_init or self.accel_profile != self.prev_accel_profile:
+        Params().put_nonblocking('AccelPersonality', str(self.accel_profile))
+        self.accel_profile_init = True
+        # Update the previous profile to prevent unnecessary re-syncing
+        self.prev_accel_profile = self.accel_profile
+
     if self.CP.carFingerprint != CAR.TOYOTA_MIRAI:
       ret.engineRpm = cp.vl["ENGINE_RPM"]["RPM"]
 
@@ -245,8 +310,12 @@ class CarState(CarStateBase):
       else:
         self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
 
+    if self.CP.spFlags & ToyotaFlagsSP.SP_ENHANCED_BSM and self.frame > 199:
+      ret.leftBlindspot, ret.rightBlindspot = self.sp_get_enhanced_bsm(cp)
+
     self._update_traffic_signals(cp_cam)
     ret.cruiseState.speedLimit = self._calculate_speed_limit()
+    self.frame += 1
 
     return ret
 
@@ -328,6 +397,43 @@ class CarState(CarStateBase):
       return self._spdval1 * CV.MPH_TO_MS
     return 0
 
+  # Enhanced BSM (@arne182, @rav4kumar)
+  def sp_get_enhanced_bsm(self, cp):
+    # Let's keep all the commented out code for easy debug purposes in the future.
+    distance_1 = cp.vl["DEBUG"].get('BLINDSPOTD1')
+    distance_2 = cp.vl["DEBUG"].get('BLINDSPOTD2')
+    side = cp.vl["DEBUG"].get('BLINDSPOTSIDE')
+
+    if all(val is not None for val in [distance_1, distance_2, side]):
+      if side == 65:  # left blind spot
+        if distance_1 != self._left_blindspot_d1 or distance_2 != self._left_blindspot_d2:
+          self._left_blindspot_d1 = distance_1
+          self._left_blindspot_d2 = distance_2
+          self._left_blindspot_counter = 100
+        self._left_blindspot = distance_1 > 10 or distance_2 > 10
+
+      elif side == 66:  # right blind spot
+        if distance_1 != self._right_blindspot_d1 or distance_2 != self._right_blindspot_d2:
+          self._right_blindspot_d1 = distance_1
+          self._right_blindspot_d2 = distance_2
+          self._right_blindspot_counter = 100
+        self._right_blindspot = distance_1 > 10 or distance_2 > 10
+
+      # update counters
+      self._left_blindspot_counter = max(0, self._left_blindspot_counter - 1)
+      self._right_blindspot_counter = max(0, self._right_blindspot_counter - 1)
+
+      # reset blind spot status if counter reaches 0
+      if self._left_blindspot_counter == 0:
+        self._left_blindspot = False
+        self._left_blindspot_d1 = self._left_blindspot_d2 = 0
+
+      if self._right_blindspot_counter == 0:
+        self._right_blindspot = False
+        self._right_blindspot_d1 = self._right_blindspot_d2 = 0
+
+    return self._left_blindspot, self._right_blindspot
+
   @staticmethod
   def get_can_parser(CP):
     messages = [
@@ -383,6 +489,9 @@ class CarState(CarStateBase):
 
     if CP.spFlags & ToyotaFlagsSP.SP_ZSS:
       messages.append(("SECONDARY_STEER_ANGLE", 0))
+
+    if CP.spFlags & ToyotaFlagsSP.SP_ENHANCED_BSM:
+      messages.append(("DEBUG", 65))
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, 0)
 
