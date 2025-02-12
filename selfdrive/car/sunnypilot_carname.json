@@ -19,11 +19,7 @@
   "Chrysler Pacifica 2021-23": "CHRYSLER_PACIFICA_2020",
   "Chrysler Pacifica Hybrid 2017": "CHRYSLER_PACIFICA_2017_HYBRID",
   "Chrysler Pacifica Hybrid 2018": "CHRYSLER_PACIFICA_2018_HYBRID",
-<<<<<<< HEAD
-  "Chrysler Pacifica Hybrid 2019-23": "CHRYSLER_PACIFICA_2019_HYBRID",
-=======
   "Chrysler Pacifica Hybrid 2019-24": "CHRYSLER_PACIFICA_2019_HYBRID",
->>>>>>> upstream/dev-c3
   "comma body": "COMMA_BODY",
   "CUPRA Ateca 2018-23": "SEAT_ATECA_MK1",
   "Dodge Durango 2020-21": "DODGE_DURANGO",
@@ -56,33 +52,15 @@
   "Genesis G90 2017-20": "GENESIS_G90",
   "Genesis GV60 (Advanced Trim) 2023": "GENESIS_GV60_EV_1ST_GEN",
   "Genesis GV60 (Performance Trim) 2023": "GENESIS_GV60_EV_1ST_GEN",
-<<<<<<< HEAD
-  "Genesis GV70 (2.5T Trim) 2022-23": "GENESIS_GV70_1ST_GEN",
-  "Genesis GV70 (3.5T Trim) 2022-23": "GENESIS_GV70_1ST_GEN",
-=======
   "Genesis GV70 (2.5T Trim, without HDA II) 2022-23": "GENESIS_GV70_1ST_GEN",
   "Genesis GV70 (3.5T Trim, without HDA II) 2022-23": "GENESIS_GV70_1ST_GEN",
->>>>>>> upstream/dev-c3
   "Genesis GV80 2023": "GENESIS_GV80",
   "GMC Sierra 1500 2020-21": "CHEVROLET_SILVERADO",
   "Honda Accord 4-Cylinder 2016-17": "HONDA_ACCORD_4CYL_9TH_GEN",
   "Honda Accord 2018-22": "HONDA_ACCORD",
   "Honda Accord Hybrid 2018-22": "HONDA_ACCORD",
-<<<<<<< HEAD
   "Honda Accord 2023-24": "HONDA_ACCORD_11G",
   "Honda Accord Hybrid 2023-24": "HONDA_ACCORD_11G",
-  "Honda Civic 2016-18": "HONDA_CIVIC",
-  "Honda Civic 2019-21": "HONDA_CIVIC_BOSCH",
-  "Honda Civic 2022-23": "HONDA_CIVIC_2022",
-  "Honda Civic Hatchback 2017-21": "HONDA_CIVIC_BOSCH",
-  "Honda Civic Hatchback 2022-23": "HONDA_CIVIC_2022",
-  "Honda Clarity 2018-22": "HONDA_CLARITY",
-  "Honda CR-V 2015-16": "HONDA_CRV",
-  "Honda CR-V 2017-22": "HONDA_CRV_5G",
-  "Honda CR-V 2023-24": "HONDA_CRV_6G",
-  "Honda CR-V Hybrid 2017-21": "HONDA_CRV_HYBRID",
-  "Honda CR-V Hybrid 2023-24": "HONDA_CRV_HYBRID_6G",
-=======
   "Honda Civic 2016-18": "HONDA_CIVIC",
   "Honda Civic 2019-21": "HONDA_CIVIC_BOSCH",
   "Honda Civic 2022-24": "HONDA_CIVIC_2022",
@@ -91,8 +69,9 @@
   "Honda Clarity 2018-22": "HONDA_CLARITY",
   "Honda CR-V 2015-16": "HONDA_CRV",
   "Honda CR-V 2017-22": "HONDA_CRV_5G",
+  "Honda CR-V 2023-24": "HONDA_CRV_6G",
   "Honda CR-V Hybrid 2017-21": "HONDA_CRV_HYBRID",
->>>>>>> upstream/dev-c3
+  "Honda CR-V Hybrid 2023-24": "HONDA_CRV_HYBRID_6G",
   "Honda e 2020": "HONDA_E",
   "Honda Fit 2018-20": "HONDA_FIT",
   "Honda Freed 2020": "HONDA_FREED",
@@ -103,10 +82,7 @@
   "Honda Odyssey 2018-20": "HONDA_ODYSSEY",
   "Honda Passport 2019-23": "HONDA_PILOT",
   "Honda Pilot 2016-22": "HONDA_PILOT",
-<<<<<<< HEAD
   "Honda Pilot 2023-24": "HONDA_PILOT_4G",
-=======
->>>>>>> upstream/dev-c3
   "Honda Ridgeline 2017-24": "HONDA_RIDGELINE",
   "Hyundai Azera 2022": "HYUNDAI_AZERA_6TH_GEN",
   "Hyundai Azera Hybrid 2019": "HYUNDAI_AZERA_HEV_6TH_GEN",
@@ -121,17 +97,10 @@
   "Hyundai Elantra Non-SCC 2022": "HYUNDAI_ELANTRA_2022_NON_SCC",
   "Hyundai Genesis 2015-16": "HYUNDAI_GENESIS",
   "Hyundai i30 2017-19": "HYUNDAI_ELANTRA_GT_I30",
-<<<<<<< HEAD
-  "Hyundai Ioniq 5 (Southeast Asia only) 2022-23": "HYUNDAI_IONIQ_5",
-  "Hyundai Ioniq 5 (with HDA II) 2022-23": "HYUNDAI_IONIQ_5",
-  "Hyundai Ioniq 5 (without HDA II) 2022-23": "HYUNDAI_IONIQ_5",
-  "Hyundai Ioniq 6 (with HDA II) 2023": "HYUNDAI_IONIQ_6",
-=======
   "Hyundai Ioniq 5 (Non-US only) 2022-24": "HYUNDAI_IONIQ_5",
   "Hyundai Ioniq 5 (with HDA II) 2022-24": "HYUNDAI_IONIQ_5",
   "Hyundai Ioniq 5 (without HDA II) 2022-24": "HYUNDAI_IONIQ_5",
   "Hyundai Ioniq 6 (with HDA II) 2023-24": "HYUNDAI_IONIQ_6",
->>>>>>> upstream/dev-c3
   "Hyundai Ioniq Electric 2019": "HYUNDAI_IONIQ_EV_LTD",
   "Hyundai Ioniq Electric 2020": "HYUNDAI_IONIQ_EV_2020",
   "Hyundai Ioniq Hybrid 2017-19": "HYUNDAI_IONIQ",
@@ -142,10 +111,7 @@
   "Hyundai Kona Electric 2018-21": "HYUNDAI_KONA_EV",
   "Hyundai Kona Electric 2022-23": "HYUNDAI_KONA_EV_2022",
   "Hyundai Kona Electric (with HDA II, Korea only) 2023": "HYUNDAI_KONA_EV_2ND_GEN",
-<<<<<<< HEAD
-=======
   "Hyundai Kona Electric Non-SCC 2019": "HYUNDAI_KONA_EV_NON_SCC",
->>>>>>> upstream/dev-c3
   "Hyundai Kona Hybrid 2020": "HYUNDAI_KONA_HEV",
   "Hyundai Kona Non-SCC 2019": "HYUNDAI_KONA_NON_SCC",
   "Hyundai Palisade 2020-22": "HYUNDAI_PALISADE",
@@ -170,12 +136,8 @@
   "Kia Carnival 2022-24": "KIA_CARNIVAL_4TH_GEN",
   "Kia Carnival (China only) 2023": "KIA_CARNIVAL_4TH_GEN",
   "Kia Ceed 2019": "KIA_CEED",
-<<<<<<< HEAD
-  "Kia EV6 (Southeast Asia only) 2022-24": "KIA_EV6",
-=======
   "Kia Ceed PHEV Non-SCC 2022": "KIA_CEED_PHEV_2022_NON_SCC",
   "Kia EV6 (Non-US only) 2022-24": "KIA_EV6",
->>>>>>> upstream/dev-c3
   "Kia EV6 (with HDA II) 2022-24": "KIA_EV6",
   "Kia EV6 (without HDA II) 2022-24": "KIA_EV6",
   "Kia Forte 2019-21": "KIA_FORTE",
@@ -236,13 +198,8 @@
   "Lexus UX Hybrid 2019-23": "TOYOTA_COROLLA_TSS2",
   "Lincoln Aviator 2020-23": "FORD_EXPLORER_MK6",
   "Lincoln Aviator Plug-in Hybrid 2020-23": "FORD_EXPLORER_MK6",
-<<<<<<< HEAD
-  "MAN eTGE 2020-23": "VOLKSWAGEN_CRAFTER_MK2",
-  "MAN TGE 2017-23": "VOLKSWAGEN_CRAFTER_MK2",
-=======
   "MAN eTGE 2020-24": "VOLKSWAGEN_CRAFTER_MK2",
   "MAN TGE 2017-24": "VOLKSWAGEN_CRAFTER_MK2",
->>>>>>> upstream/dev-c3
   "Mazda CX-5 2022-24": "MAZDA_CX5_2022",
   "Mazda CX-9 2021-23": "MAZDA_CX9_2021",
   "Nissan Altima 2019-20": "NISSAN_ALTIMA",
@@ -300,11 +257,7 @@
   "Toyota Corolla Cross Hybrid (Non-US only) 2020-22": "TOYOTA_COROLLA_TSS2",
   "Toyota Corolla Hatchback 2019-22": "TOYOTA_COROLLA_TSS2",
   "Toyota Corolla Hybrid 2020-22": "TOYOTA_COROLLA_TSS2",
-<<<<<<< HEAD
-  "Toyota Corolla Hybrid (Non-US only) 2020-23": "TOYOTA_COROLLA_TSS2",
-=======
   "Toyota Corolla Hybrid (South America only) 2020-23": "TOYOTA_COROLLA_TSS2",
->>>>>>> upstream/dev-c3
   "Toyota Highlander 2017-19": "TOYOTA_HIGHLANDER",
   "Toyota Highlander 2020-23": "TOYOTA_HIGHLANDER_TSS2",
   "Toyota Highlander Hybrid 2017-19": "TOYOTA_HIGHLANDER",
@@ -336,13 +289,8 @@
   "Volkswagen California 2021-23": "VOLKSWAGEN_TRANSPORTER_T61",
   "Volkswagen Caravelle 2020": "VOLKSWAGEN_TRANSPORTER_T61",
   "Volkswagen CC 2018-22": "VOLKSWAGEN_ARTEON_MK1",
-<<<<<<< HEAD
-  "Volkswagen Crafter 2017-23": "VOLKSWAGEN_CRAFTER_MK2",
-  "Volkswagen e-Crafter 2018-23": "VOLKSWAGEN_CRAFTER_MK2",
-=======
   "Volkswagen Crafter 2017-24": "VOLKSWAGEN_CRAFTER_MK2",
   "Volkswagen e-Crafter 2018-24": "VOLKSWAGEN_CRAFTER_MK2",
->>>>>>> upstream/dev-c3
   "Volkswagen e-Golf 2014-20": "VOLKSWAGEN_GOLF_MK7",
   "Volkswagen Golf 2015-20": "VOLKSWAGEN_GOLF_MK7",
   "Volkswagen Golf Alltrack 2015-19": "VOLKSWAGEN_GOLF_MK7",
@@ -351,11 +299,7 @@
   "Volkswagen Golf GTI 2015-21": "VOLKSWAGEN_GOLF_MK7",
   "Volkswagen Golf R 2015-19": "VOLKSWAGEN_GOLF_MK7",
   "Volkswagen Golf SportsVan 2015-20": "VOLKSWAGEN_GOLF_MK7",
-<<<<<<< HEAD
-  "Volkswagen Grand California 2019-23": "VOLKSWAGEN_CRAFTER_MK2",
-=======
   "Volkswagen Grand California 2019-24": "VOLKSWAGEN_CRAFTER_MK2",
->>>>>>> upstream/dev-c3
   "Volkswagen Jetta 2018-24": "VOLKSWAGEN_JETTA_MK7",
   "Volkswagen Jetta GLI 2021-24": "VOLKSWAGEN_JETTA_MK7",
   "Volkswagen Passat 2015-22": "VOLKSWAGEN_PASSAT_MK8",

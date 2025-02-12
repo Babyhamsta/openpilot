@@ -90,17 +90,13 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.pid.kf = 0.00006  # conservative feed-forward
 
     if candidate in HONDA_BOSCH:
-      ret.longitudinalTuning.kpV = [0.25]
-      ret.longitudinalTuning.kiV = [0.05]
-      ret.longitudinalActuatorDelayUpperBound = 0.5 # s
+      ret.longitudinalActuatorDelay = 0.5 # s
       if candidate in HONDA_BOSCH_RADARLESS:
         ret.stopAccel = CarControllerParams.BOSCH_ACCEL_MIN  # stock uses -4.0 m/s^2 once stopped but limited by safety model
     else:
       # default longitudinal tuning for all hondas
-      ret.longitudinalTuning.kpBP = [0., 5., 35.]
-      ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
-      ret.longitudinalTuning.kiBP = [0., 35.]
-      ret.longitudinalTuning.kiV = [0.18, 0.12]
+      ret.longitudinalTuning.kiBP = [0., 5., 35.]
+      ret.longitudinalTuning.kiV = [1.2, 0.8, 0.5]
 
     eps_modified = False
     for fw in car_fw:
@@ -128,7 +124,7 @@ class CarInterface(CarInterfaceBase):
       else:
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]  # TODO: determine if there is a dead zone at the top end
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.8], [0.24]]
-
+        
     elif candidate == CAR.HONDA_ACCORD_11G:
       ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.2], [0.18]]
@@ -195,11 +191,6 @@ class CarInterface(CarInterfaceBase):
       ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 239], [0, 239]]
       ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.,20], [0.,20]]
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.4,0.3], [0,0]]
-      tire_stiffness_factor = 0.8467
-      ret.longitudinalTuning.kpBP = [0., 5., 35.]
-      ret.longitudinalTuning.kpV = [2.4, 1.6, 0.8]
-      ret.longitudinalTuning.kiBP = [0., 35.]
-      ret.longitudinalTuning.kiV = [0.2, 0.16]
 
     elif candidate in (CAR.HONDA_ODYSSEY, CAR.HONDA_ODYSSEY_CHN):
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.28], [0.08]]

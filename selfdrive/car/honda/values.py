@@ -59,8 +59,9 @@ class HondaFlags(IntFlag):
   NIDEC = 16
   NIDEC_ALT_PCM_ACCEL = 32
   NIDEC_ALT_SCM_MESSAGES = 64
-
+  
   CANFD_CAR = 128
+
 
 # Car button codes
 class CruiseButtons:

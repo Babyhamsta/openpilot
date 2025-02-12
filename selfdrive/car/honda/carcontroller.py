@@ -15,6 +15,7 @@ from openpilot.selfdrive.controls.lib.drive_helpers import HONDA_V_CRUISE_MIN
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
 
+
 def compute_gb_honda_bosch(accel, speed):
   # TODO returns 0s, is unused
   return 0.0, 0.0
@@ -129,9 +130,6 @@ class CarController(CarControllerBase):
 
     self.sm = messaging.SubMaster(['longitudinalPlanSP'])
     self.param_s = Params()
-    self.is_metric = self.param_s.get_bool("IsMetric")
-    self.speed_limit_control_enabled = False
-    self.last_speed_limit_sign_tap = False
     self.last_speed_limit_sign_tap_prev = False
     self.speed_limit = 0.
     self.speed_limit_offset = 0
@@ -225,7 +223,6 @@ class CarController(CarControllerBase):
     if self.CP.carFingerprint in (HONDA_BOSCH - HONDA_BOSCH_RADARLESS - HONDA_CANFD_CAR) and self.CP.openpilotLongitudinalControl:
       if self.frame % 10 == 0:
         can_sends.append(make_tester_present_msg(0x18DAB0F1, 1, suppress_response=True))
-        #can_sends.append((0x18DAB0F1, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 1))
 
     # Send steering command.
     can_sends.append(hondacan.create_steering_control(self.packer, self.CAN, apply_steer, CC.latActive, self.CP.carFingerprint,
