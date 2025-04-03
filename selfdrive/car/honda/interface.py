@@ -271,7 +271,7 @@ class CarInterface(CarInterfaceBase):
     if ret.enableGasInterceptorDEPRECATED and candidate not in HONDA_BOSCH:
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HONDA_GAS_INTERCEPTOR
 
-    if candidate in (HONDA_BOSCH_RADARLESS| HONDA_CANFD_CAR):
+    if candidate in (HONDA_BOSCH_RADARLESS | HONDA_CANFD_CAR):
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HONDA_RADARLESS
 
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
