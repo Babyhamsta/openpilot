@@ -46,7 +46,13 @@ class CarInterface(CarInterfaceBase):
         cfgs.insert(0, get_safety_config(car.CarParams.SafetyModel.noOutput))
       ret.safetyConfigs = cfgs
       ret.radarUnavailable = True
-      ret.openpilotLongitudinalControl = False
+
+      # Disable the radar and let openpilot control longitudinal
+      # WARNING: THIS DISABLES AEB!
+      # If Bosch radarless, this blocks ACC messages from the camera
+      ret.experimentalLongitudinalAvailable = True
+      ret.openpilotLongitudinalControl = experimental_long
+      ret.pcmCruise = not ret.openpilotLongitudinalControl
     elif candidate in HONDA_BOSCH:
       ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.hondaBosch)]
       ret.radarUnavailable = True
