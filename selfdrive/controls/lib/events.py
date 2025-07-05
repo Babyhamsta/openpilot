@@ -990,7 +990,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   },
 
   EventName.espActive: {
-    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Electronic Stability Control Active"),
+    ET.SOFT_DISABLE: soft_disable_alert("Electronic Stability Control Active"),
     ET.NO_ENTRY: NoEntryAlert("Electronic Stability Control Active"),
   },
 
@@ -1141,6 +1141,9 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.PERMANENT: torque_nn_load_alert,
   },
 
+  EventName.hyundaiRadarTracksAvailable: {
+    ET.PERMANENT: NormalPermanentAlert("Radar tracks available. Restart the car to initialize")
+  }
 }
 
 

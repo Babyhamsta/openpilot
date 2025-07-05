@@ -24,8 +24,8 @@ int fsync_dir(const std::string &path) {
   int result = -1;
   int fd = HANDLE_EINTR(open(path.c_str(), O_RDONLY, 0755));
   if (fd >= 0) {
-    result = fsync(fd);
-    close(fd);
+    result = HANDLE_EINTR(fsync(fd));
+    HANDLE_EINTR(close(fd));
   }
   return result;
 }
@@ -261,9 +261,13 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"HandsOnWheelMonitoring", PERSISTENT | BACKUP},
     {"HasAcceptedTermsSP", PERSISTENT},
     {"HideVEgoUi", PERSISTENT | BACKUP},
+    {"HyundaiCruiseMainDefault", PERSISTENT | BACKUP},
     {"HkgSmoothStop", PERSISTENT | BACKUP},
     {"HotspotOnBoot", PERSISTENT},
     {"HotspotOnBootConfirmed", PERSISTENT},
+    {"HyundaiRadarTracksAvailable", PERSISTENT},
+    {"HyundaiRadarTracksAvailableCache", PERSISTENT},
+    {"HyundaiRadarTracksAvailablePersistent", PERSISTENT},
     {"LastCarModel", PERSISTENT | BACKUP},
     {"LastSpeedLimitSignTap", PERSISTENT},
     {"LastSunnylinkPingTime", CLEAR_ON_MANAGER_START},

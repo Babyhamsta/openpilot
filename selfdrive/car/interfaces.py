@@ -7,6 +7,7 @@ import tomllib
 from abc import abstractmethod, ABC
 from difflib import SequenceMatcher
 from enum import StrEnum
+from types import SimpleNamespace
 from typing import Any, NamedTuple
 from collections.abc import Callable
 from functools import cache
@@ -17,13 +18,15 @@ from openpilot.common.conversions import Conversions as CV
 from openpilot.common.simple_kalman import KF1D, get_kalman_gain
 from openpilot.common.numpy_fast import clip
 from openpilot.common.params import Params
-from openpilot.common.realtime import DT_CTRL
-from openpilot.selfdrive.car import apply_hysteresis, gen_empty_fingerprint, scale_rot_inertia, scale_tire_stiffness, STD_CARGO_KG, ButtonEvents
+from openpilot.selfdrive.car import DT_CTRL, apply_hysteresis, gen_empty_fingerprint, scale_rot_inertia, scale_tire_stiffness, get_friction, STD_CARGO_KG, \
+                                    ButtonEvents
+from openpilot.selfdrive.car.param_manager import ParamManager
 from openpilot.selfdrive.car.values import PLATFORMS
 from openpilot.selfdrive.controls.lib.desire_helper import get_min_lateral_speed
-from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, V_CRUISE_UNSET, get_friction
+from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.selfdrive.controls.lib.events import Events
 from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
+from openpilot.selfdrive.pandad import can_capnp_to_list
 
 ButtonType = car.CarState.ButtonEvent.Type
 GearShifter = car.CarState.GearShifter
@@ -69,6 +72,7 @@ class LatControlInputs(NamedTuple):
   aego: float
 
 
+SendCan = tuple[int, bytes, int]
 TorqueFromLateralAccelCallbackType = Callable[[LatControlInputs, car.CarParams.LateralTorqueTuning, float, float, bool, bool], float]
 
 
@@ -238,19 +242,8 @@ class CarInterfaceBase(ABC):
     self.mads_ndlob = self.enable_mads and not self.mads_disengage_lateral_on_brake
     self.gear_warning = 0
     self.cruise_cancelled_btn = True
-    self.acc_mads_combo = self.param_s.get_bool("AccMadsCombo")
-    self.is_metric = self.param_s.get_bool("IsMetric")
-    self.below_speed_pause = self.param_s.get_bool("BelowSpeedPause")
-    self.pause_lateral_speed = int(self.param_s.get("PauseLateralSpeed", encoding="utf8"))
     self.prev_acc_mads_combo = False
     self.mads_event_lock = True
-    self.gap_button_counter = 0
-    self.experimental_mode_hold = False
-    self.experimental_mode = self.param_s.get_bool("ExperimentalMode")
-    self._frame = 0
-    self.reverse_dm_cam = self.param_s.get_bool("ReverseDmCam")
-    self.mads_main_toggle = self.param_s.get_bool("MadsCruiseMain")
-    self.lkas_toggle = self.param_s.get_bool("LkasToggle")
     self.last_mads_init = 0.
     self.madsEnabledInit = False
     self.madsEnabledInitPrev = False
@@ -267,7 +260,7 @@ class CarInterfaceBase(ABC):
     self.lat_torque_nn_model, _ = get_nn_model(_car, eps_firmware)
     return self.lat_torque_nn_model is not None and self.param_s.get_bool("NNFF")
 
-  def apply(self, c: car.CarControl, now_nanos: int) -> tuple[car.CarControl.Actuators, list[tuple[int, int, bytes, int]]]:
+  def apply(self, c: car.CarControl, now_nanos: int) -> tuple[car.CarControl.Actuators, list[SendCan]]:
     return self.CC.update(c, self.CS, now_nanos)
 
   @staticmethod
@@ -421,13 +414,15 @@ class CarInterfaceBase(ABC):
   def _update(self, c: car.CarControl) -> car.CarState:
     pass
 
-  def update(self, c: car.CarControl, can_strings: list[bytes]) -> car.CarState:
+  def update(self, c: car.CarControl, can_strings: list[bytes], params_list: SimpleNamespace) -> car.CarState:
     # parse can
+    can_list = can_capnp_to_list(can_strings)
     for cp in self.can_parsers:
       if cp is not None:
-        cp.update_strings(can_strings)
+        cp.update_strings(can_list)
 
     self.CS.button_events = []
+    self.CS.params_list = params_list
 
     # get CarState
     ret = self._update(c)
@@ -472,11 +467,11 @@ class CarInterfaceBase(ABC):
       else:
         events.add(EventName.wrongGear)
     if cs_out.gearShifter == GearShifter.reverse:
-      if not self.reverse_dm_cam and cs_out.vEgo < 5:
+      if not self.CS.params_list.reverse_dm_cam and cs_out.vEgo < 5:
         events.add(EventName.spReverseGear)
       elif cs_out.vEgo >= 5:
         events.add(EventName.reverseGear)
-    if not cs_out.cruiseState.available:
+    if not cs_out.cruiseState.available and cs_out.cruiseState.enabled:
       events.add(EventName.wrongCarMode)
     if cs_out.espDisabled:
       events.add(EventName.espDisabled)
@@ -553,20 +548,20 @@ class CarInterfaceBase(ABC):
   def sp_v_cruise_initialized(v_cruise):
     return v_cruise != V_CRUISE_UNSET
 
-  def get_acc_mads(self, cruiseState_enabled, acc_enabled, mads_enabled):
-    if self.acc_mads_combo:
-      if not self.prev_acc_mads_combo and (cruiseState_enabled or acc_enabled):
+  def get_acc_mads(self, cs_out, mads_enabled):
+    if self.CS.params_list.acc_mads_combo:
+      if not self.prev_acc_mads_combo and (cs_out.cruiseState.enabled or self.CS.accEnabled):
         mads_enabled = True
-      self.prev_acc_mads_combo = (cruiseState_enabled or acc_enabled)
+      self.prev_acc_mads_combo = (cs_out.cruiseState.enabled or self.CS.accEnabled)
 
     return mads_enabled
 
-  def get_sp_v_cruise_non_pcm_state(self, cs_out, acc_enabled, button_events, vCruise,
+  def get_sp_v_cruise_non_pcm_state(self, cs_out, vCruise, acc_enabled,
                                     enable_buttons=(ButtonType.accelCruise, ButtonType.decelCruise),
                                     resume_button=(ButtonType.accelCruise, ButtonType.resumeCruise)):
 
     if cs_out.cruiseState.available:
-      for b in button_events:
+      for b in self.CS.button_events:
         if not self.CP.pcmCruise or not self.CP.pcmCruiseSpeed:
           if b.type in enable_buttons and not b.pressed:
             acc_enabled = True
@@ -581,9 +576,9 @@ class CarInterfaceBase(ABC):
 
     return acc_enabled
 
-  def get_sp_cancel_cruise_state(self, mads_enabled, acc_enabled=False):
-    mads_enabled = False if not self.enable_mads or self.disengage_on_accelerator else mads_enabled
-    return mads_enabled, acc_enabled
+  def get_sp_cancel_cruise_state(self):
+    self.CS.madsEnabled = False if not self.enable_mads or self.disengage_on_accelerator else self.CS.madsEnabled
+    self.CS.accEnabled = False
 
   def get_sp_pedal_disengage(self, cs_out):
     accel_pedal = cs_out.gasPressed and not self.CS.out.gasPressed and self.disengage_on_accelerator
@@ -591,24 +586,22 @@ class CarInterfaceBase(ABC):
     regen = cs_out.regenBraking and (not self.CS.out.regenBraking or not cs_out.standstill)
     return accel_pedal or brake or regen
 
-  def get_sp_cruise_main_state(self, cs_out, CS):
-    if not CS.control_initialized:
-      mads_enabled = False
-    elif not self.mads_main_toggle:
-      mads_enabled = False
+  def get_sp_cruise_main_state(self, cs_out):
+    if not self.CS.control_initialized:
+      return False
+    elif not self.CS.params_list.mads_main_toggle:
+      return False
     else:
-      mads_enabled = cs_out.cruiseState.available
+      return cs_out.cruiseState.available
 
-    return mads_enabled
-
-  def get_sp_started_mads(self, cs_out, CS):
-    if not cs_out.cruiseState.available and CS.out.cruiseState.available:
+  def get_sp_started_mads(self, cs_out, mads_enabled):
+    if not cs_out.cruiseState.available and self.CS.out.cruiseState.available:
       self.madsEnabledInit = False
       self.madsEnabledInitPrev = False
       return False
-    if not self.mads_main_toggle or self.prev_acc_mads_combo:
-      return CS.madsEnabled
-    if not self.madsEnabledInit and CS.madsEnabled:
+    if not self.CS.params_list.mads_main_toggle or self.prev_acc_mads_combo:
+      return mads_enabled
+    if not self.madsEnabledInit and self.CS.madsEnabled:
       self.madsEnabledInit = True
       self.last_mads_init = time.monotonic()
     if cs_out.gearShifter not in FORWARD_GEARS:
@@ -619,24 +612,20 @@ class CarInterfaceBase(ABC):
       self.madsEnabledInitPrev = True
       return cs_out.cruiseState.available
     else:
-      return CS.madsEnabled
+      return mads_enabled
 
-  def get_sp_common_state(self, cs_out, CS, min_enable_speed_pcm=False, gear_allowed=True, gap_button=False):
-    cs_out.cruiseState.enabled = CS.accEnabled if not self.CP.pcmCruise or not self.CP.pcmCruiseSpeed or min_enable_speed_pcm else \
-                                 cs_out.cruiseState.enabled
+  def get_sp_common_state(self, cs_out, gear_allowed=True):
+    cs_out.cruiseState.enabled = self.CS.accEnabled if not self.CP.pcmCruise or not self.CP.pcmCruiseSpeed else cs_out.cruiseState.enabled
 
     if not self.enable_mads:
-      if cs_out.cruiseState.enabled and not CS.out.cruiseState.enabled:
-        CS.madsEnabled = True
-      elif not cs_out.cruiseState.enabled and CS.out.cruiseState.enabled:
-        CS.madsEnabled = False
+      if cs_out.cruiseState.enabled and not self.CS.out.cruiseState.enabled:
+        self.CS.madsEnabled = True
+      elif not cs_out.cruiseState.enabled and self.CS.out.cruiseState.enabled:
+        self.CS.madsEnabled = False
 
-    if self.CP.openpilotLongitudinalControl:
-      self.toggle_exp_mode(gap_button)
+    lane_change_speed_min = get_min_lateral_speed(self.CS.params_list.pause_lateral_speed, self.CS.params_list.is_metric)
 
-    lane_change_speed_min = get_min_lateral_speed(self.pause_lateral_speed, self.is_metric)
-
-    cs_out.belowLaneChangeSpeed = cs_out.vEgo < lane_change_speed_min and self.below_speed_pause
+    cs_out.belowLaneChangeSpeed = cs_out.vEgo < lane_change_speed_min and self.CS.params_list.below_speed_pause
 
     if cs_out.gearShifter in [GearShifter.park, GearShifter.reverse] or cs_out.doorOpen or \
       (cs_out.seatbeltUnlatched and cs_out.gearShifter != GearShifter.park):
@@ -644,37 +633,24 @@ class CarInterfaceBase(ABC):
 
     cs_out.latActive = gear_allowed
 
-    if not CS.control_initialized:
-      CS.control_initialized = True
+    if not self.CS.control_initialized:
+      self.CS.control_initialized = True
 
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
     if (cs_out.gasPressed and not self.CS.out.gasPressed and self.disengage_on_accelerator) or \
       (cs_out.brakePressed and (not self.CS.out.brakePressed or not cs_out.standstill)) or \
       (cs_out.regenBraking and (not self.CS.out.regenBraking or not cs_out.standstill)):
-      if CS.madsEnabled:
-        CS.disengageByBrake = True
+      if self.CS.madsEnabled:
+        self.CS.disengageByBrake = True
 
-    cs_out.madsEnabled = CS.madsEnabled
-    cs_out.accEnabled = CS.accEnabled
-    cs_out.disengageByBrake = CS.disengageByBrake
+    cs_out.madsEnabled = self.CS.madsEnabled
+    cs_out.accEnabled = self.CS.accEnabled
+    cs_out.disengageByBrake = self.CS.disengageByBrake
     cs_out.brakeLightsDEPRECATED |= cs_out.brakePressed or cs_out.brakeHoldActive or cs_out.parkingBrake or cs_out.regenBraking
 
-    return cs_out, CS
+    return cs_out
 
-  # TODO: SP: use upstream's buttonEvents counter checks from controlsd
-  def toggle_exp_mode(self, gap_pressed):
-    if gap_pressed:
-      if not self.experimental_mode_hold:
-        self.gap_button_counter += 1
-        if self.gap_button_counter > 50:
-          self.gap_button_counter = 0
-          self.experimental_mode_hold = True
-          self.param_s.put_bool_nonblocking("ExperimentalMode", not self.experimental_mode)
-    else:
-      self.gap_button_counter = 0
-      self.experimental_mode_hold = False
-
-  def create_sp_events(self, CS, cs_out, events, main_enabled=False, allow_enable=True, enable_pressed=False,
+  def create_sp_events(self, cs_out, events, main_enabled=False, allow_enable=True, enable_pressed=False,
                        enable_from_brake=False, enable_pressed_long=False,
                        enable_buttons=(ButtonType.accelCruise, ButtonType.decelCruise)):
 
@@ -682,7 +658,7 @@ class CarInterfaceBase(ABC):
       if cs_out.disengageByBrake and cs_out.madsEnabled:
         enable_pressed = True
         enable_from_brake = True
-      CS.disengageByBrake = False
+      self.CS.disengageByBrake = False
       cs_out.disengageByBrake = False
 
     for b in cs_out.buttonEvents:
@@ -711,11 +687,11 @@ class CarInterfaceBase(ABC):
     if self.CP.pcmCruise:
       # do disable on button down
       if main_enabled:
-        if any(CS.main_buttons) and not cs_out.cruiseState.enabled:
+        if any(self.CS.main_buttons) and not cs_out.cruiseState.enabled:
           if not cs_out.madsEnabled:
             events.add(EventName.buttonCancel)
       # do enable on both accel and decel buttons
-      if cs_out.cruiseState.enabled and not CS.out.cruiseState.enabled and allow_enable:
+      if cs_out.cruiseState.enabled and not self.CS.out.cruiseState.enabled and allow_enable:
         enable_pressed = True
         enable_pressed_long = True
       elif not cs_out.cruiseState.enabled:
@@ -735,19 +711,19 @@ class CarInterfaceBase(ABC):
 
     return events, cs_out
 
-  def sp_update_params(self):
-    self.experimental_mode = self.param_s.get_bool("ExperimentalMode")
-    self._frame += 1
-    if self._frame % 100 == 0:
-      self.is_metric = self.param_s.get_bool("IsMetric")
-      self.below_speed_pause = self.param_s.get_bool("BelowSpeedPause")
-      self.pause_lateral_speed = int(self.param_s.get("PauseLateralSpeed", encoding="utf8"))
-    if self._frame % 300 == 0:
-      self._frame = 0
-      self.reverse_dm_cam = self.param_s.get_bool("ReverseDmCam")
+  def update_custom_stock_long(self):
+    customStockLong = car.CarState.CustomStockLong.new_message()
+    customStockLong.cruiseButton = 0 if self.CC.cruise_button is None else int(self.CC.cruise_button)
+    customStockLong.finalSpeedKph = float(self.CC.final_speed_kph)
+    customStockLong.targetSpeed = float(self.CC.target_speed)
+    customStockLong.vSetDis = float(self.CC.v_set_dis)
+    customStockLong.speedDiff = float(self.CC.speed_diff)
+    customStockLong.buttonType = int(self.CC.button_type)
+    return customStockLong
 
 class RadarInterfaceBase(ABC):
   def __init__(self, CP):
+    self.CP = CP
     self.rcp = None
     self.pts = {}
     self.delay = 0
@@ -776,7 +752,6 @@ class CarStateBase(ABC):
     self.cluster_speed_hyst_gap = 0.0
     self.cluster_min_speed = 0.0  # min speed before dropping to 0
 
-    self.param_s = Params()
     self.accEnabled = False
     self.madsEnabled = False
     self.disengageByBrake = False
@@ -785,6 +760,7 @@ class CarStateBase(ABC):
     self.control_initialized = False
 
     self.button_events: list[capnp.lib.capnp._DynamicStructBuilder] = []
+    self.params_list: SimpleNamespace = ParamManager().get_params()
 
     Q = [[0.0, 0.0], [0.0, 100.0]]
     R = 0.3
@@ -848,16 +824,6 @@ class CarStateBase(ABC):
 
     return bool(left_blinker_stalk or self.left_blinker_cnt > 0), bool(right_blinker_stalk or self.right_blinker_cnt > 0)
 
-  def update_custom_stock_long(self, cruise_button, final_speed_kph, target_speed, v_set_dis, speed_diff, button_type):
-    customStockLong = car.CarState.CustomStockLong.new_message()
-    customStockLong.cruiseButton = 0 if cruise_button is None else cruise_button
-    customStockLong.finalSpeedKph = final_speed_kph
-    customStockLong.targetSpeed = target_speed
-    customStockLong.vSetDis = v_set_dis
-    customStockLong.speedDiff = speed_diff
-    customStockLong.buttonType = button_type
-    return customStockLong
-
   @staticmethod
   def parse_gear_shifter(gear: str | None) -> car.CarState.GearShifter:
     if gear is None:
@@ -885,12 +851,17 @@ class CarStateBase(ABC):
     return None
 
 
-SendCan = tuple[int, int, bytes, int]
-
-
 class CarControllerBase(ABC):
   def __init__(self, dbc_name: str, CP, VM):
-    pass
+    self.CP = CP
+    self.frame = 0
+
+    self.cruise_button = 0
+    self.final_speed_kph = 0.0
+    self.target_speed = 0.0
+    self.v_set_dis = 0.0
+    self.speed_diff = 0.0
+    self.button_type = 0
 
   @abstractmethod
   def update(self, CC: car.CarControl.Actuators, CS: car.CarState, now_nanos: int) -> tuple[car.CarControl.Actuators, list[SendCan]]:
