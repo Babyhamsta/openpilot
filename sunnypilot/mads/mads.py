@@ -34,6 +34,7 @@ class ModularAssistiveDrivingSystem:
     self.available = False
     self.allow_always = False
     self.no_main_cruise = False
+    self._first_initialized_frame = True
     self.selfdrive = selfdrive
     self.selfdrive.enabled_prev = False
     self.state_machine = StateMachine(self)
@@ -148,6 +149,10 @@ class ModularAssistiveDrivingSystem:
       if self.main_enabled_toggle:
         if CS.cruiseState.available and not self.selfdrive.CS_prev.cruiseState.available:
           self.events_sp.add(EventNameSP.lkasEnable)
+        # On first frame after initialization, if cruiseState.available is already true,
+        # the rising edge was missed during boot — auto-enable MADS
+        elif CS.cruiseState.available and self._first_initialized_frame and self.selfdrive.initialized:
+          self.events_sp.add(EventNameSP.lkasEnable)
 
     for be in CS.buttonEvents:
       if be.type == ButtonType.cancel:
@@ -194,6 +199,7 @@ class ModularAssistiveDrivingSystem:
 
     if not self.CP.passive and self.selfdrive.initialized:
       self.enabled, self.active = self.state_machine.update()
+      self._first_initialized_frame = False
 
     # Copy of previous SelfdriveD states for MADS events handling
     self.selfdrive.enabled_prev = self.selfdrive.enabled
